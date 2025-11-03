@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { db } from "@/lib/db";
 import { parseCSV, validateProductData, prepareProductForDB } from "@/lib/product-import-export";
-
-const prisma = new PrismaClient();
 
 /**
  * POST /api/admin/products/import
@@ -91,7 +89,7 @@ export async function POST(request: NextRequest) {
         // Find or create sizes
         const sizeRecords = await Promise.all(
           sizeNames.map(async (sizeName: string) => {
-            return await prisma.size.upsert({
+            return await db.size.upsert({
               where: { name: sizeName },
               update: {},
               create: { name: sizeName },
@@ -100,7 +98,7 @@ export async function POST(request: NextRequest) {
         );
 
         // Create product
-        const product = await prisma.product.create({
+        const product = await db.product.create({
           data: {
             title: preparedProduct.title,
             description: preparedProduct.description,

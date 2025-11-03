@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { db } from "@/lib/db";
 import { generateCSV, prepareProductForExport } from "@/lib/product-import-export";
-
-const prisma = new PrismaClient();
 
 /**
  * GET /api/admin/products/export?format=csv|json
@@ -14,7 +12,7 @@ export async function GET(request: NextRequest) {
     const format = searchParams.get("format") || "csv";
 
     // Fetch all products with related data
-    const products = await prisma.product.findMany({
+    const products = await db.product.findMany({
       include: {
         productSizes: {
           include: {
