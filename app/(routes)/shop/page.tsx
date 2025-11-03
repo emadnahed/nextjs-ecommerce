@@ -1,5 +1,5 @@
 import ProductCard from "@/components/ui/product-card";
-import { getAllProducts } from "@/lib/apiCalls";
+import { getAllProductsFromDB } from "@/lib/serverDataAccess";
 import filteredData from "@/app/utils/filteredData";
 import { Product } from "@/types";
 
@@ -15,7 +15,9 @@ const ShopPage = async ({
     [key: string]: string | string[] | undefined;
   };
 }) => {
-  const data = await getAllProducts();
+  console.log('[ShopPage] Fetching products...');
+  const data = await getAllProductsFromDB();
+  console.log('[ShopPage] Products fetched:', data.length);
   let searchMsg;
 
   let filtered: Product[] | undefined;

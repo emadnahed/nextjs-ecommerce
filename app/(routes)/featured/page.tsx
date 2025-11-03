@@ -1,5 +1,5 @@
 import Container from "@/components/ui/container";
-import { getFeaturedProducts } from "@/lib/apiCalls";
+import { getFeaturedProductsFromDB } from "@/lib/serverDataAccess";
 import filteredData from "@/app/utils/filteredData";
 import { Product } from "@/types";
 import ProductCard from "@/components/ui/product-card";
@@ -16,7 +16,9 @@ const FeaturedPage = async ({
     [key: string]: string | string[] | undefined;
   };
 }) => {
-  const data = await getFeaturedProducts();
+  console.log('[FeaturedPage] Fetching featured products...');
+  const data = await getFeaturedProductsFromDB();
+  console.log('[FeaturedPage] Featured products fetched:', data.length);
 
   let filtered: Product[] | undefined;
 

@@ -1,7 +1,7 @@
 import filteredData from "@/app/utils/filteredData";
 import ProductCard from "@/components/ui/product-card";
 import { siteConfig } from "@/config/site";
-import { getCategoryProducts } from "@/lib/apiCalls";
+import { getProductsByTypeFromDB } from "@/lib/serverDataAccess";
 import { Product } from "@/types";
 import { type Metadata } from "next";
 
@@ -10,7 +10,8 @@ export async function generateMetadata({
 }: {
   params: { category: string };
 }): Promise<Metadata> {
-  const data = await getCategoryProducts(params.category);
+  console.log('[CategoryPage] Fetching metadata for category:', params.category);
+  const data = await getProductsByTypeFromDB(params.category);
   if (!data || data.length <= 0)
     return {
       title: "Demo Store",
@@ -32,7 +33,9 @@ const SearchPage = async ({
   params: { category: string };
   searchParams: { [key: string]: string | string[] | undefined };
 }) => {
-  const data = await getCategoryProducts(params.category);
+  console.log('[CategoryPage] Fetching products for category:', params.category);
+  const data = await getProductsByTypeFromDB(params.category);
+  console.log('[CategoryPage] Products fetched:', data.length);
 
   let filtered: Product[] | undefined;
 

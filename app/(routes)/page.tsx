@@ -3,15 +3,12 @@ import Footer from "@/components/footer";
 import TitleHeader from "@/components/title-header";
 import Billboard from "@/components/ui/billboard";
 import Container from "@/components/ui/container";
-import { getAllProducts } from "@/lib/apiCalls";
-import { Product } from "@/types";
+import { getFeaturedProductsFromDB } from "@/lib/serverDataAccess";
 
 const HomePage = async () => {
-  const products = await getAllProducts();
-
-  const featuredProducts = products.filter(
-    (product: Product) => product.featured
-  );
+  console.log('[HomePage] Fetching featured products...');
+  const featuredProducts = await getFeaturedProductsFromDB();
+  console.log('[HomePage] Featured products fetched:', featuredProducts.length);
 
   return (
     <>

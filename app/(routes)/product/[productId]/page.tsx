@@ -1,6 +1,6 @@
 import { type Metadata } from "next";
 import ProductItem from "./_components/product-item";
-import { getProduct } from "@/lib/apiCalls";
+import { getProductFromDB } from "@/lib/serverDataAccess";
 import Footer from "@/components/footer";
 import { siteConfig } from "@/config/site";
 
@@ -9,7 +9,8 @@ export async function generateMetadata({
 }: {
   params: { productId: string };
 }): Promise<Metadata> {
-  const getProducts = await getProduct(params.productId);
+  console.log('[ProductPage] Fetching metadata for product:', params.productId);
+  const getProducts = await getProductFromDB(params.productId);
 
   if (!getProducts)
     return {

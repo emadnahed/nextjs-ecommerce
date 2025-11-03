@@ -82,21 +82,45 @@ export const getProductsByType = async (type: string): Promise<Product[]> => {
 
 export const getAllProducts = async (): Promise<Product[]> => {
   try {
+    console.log('[getAllProducts] API_URL:', API_URL);
+    console.log('[getAllProducts] Environment:', {
+      isServer: typeof window === 'undefined',
+      VERCEL_URL: process.env.VERCEL_URL,
+      NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+    });
+
     const response = await fetch(`${API_URL}/api/product`, {
       cache: 'no-store'
     });
-    if (!response.ok) throw new Error('Failed to fetch products');
+
+    console.log('[getAllProducts] Response status:', response.status);
+
+    if (!response.ok) {
+      console.error('[getAllProducts] Response not OK:', {
+        status: response.status,
+        statusText: response.statusText,
+      });
+      throw new Error(`Failed to fetch products: ${response.status} ${response.statusText}`);
+    }
+
     const data = await response.json();
+    console.log('[getAllProducts] Fetched products count:', Array.isArray(data) ? data.length : 'not an array');
 
     // Check if data is an array
     if (!Array.isArray(data)) {
-      console.error('API did not return an array:', data);
+      console.error('[getAllProducts] API did not return an array:', data);
       return [];
     }
 
-    return enrichProductsWithImageURLs(data);
+    const enrichedData = enrichProductsWithImageURLs(data);
+    console.log('[getAllProducts] Enriched products count:', enrichedData.length);
+    return enrichedData;
   } catch (error) {
-    console.error('Error fetching all products:', error);
+    console.error('[getAllProducts] Error fetching all products:', error);
+    if (error instanceof Error) {
+      console.error('[getAllProducts] Error message:', error.message);
+      console.error('[getAllProducts] Error stack:', error.stack);
+    }
     return [];
   }
 };
