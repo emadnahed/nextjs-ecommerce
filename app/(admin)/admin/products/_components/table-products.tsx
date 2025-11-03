@@ -26,8 +26,8 @@ type createData = {
   price: number;
   featured: boolean;
   id: string;
-  imageURLs: string[];
-  category: string;
+  imageIds: string[];
+  type: string;
   createdAt: string;
 };
 
@@ -118,16 +118,22 @@ export default function ProductTable() {
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
-                  <Image
-                    src={`${baseUrl}${product.imageURLs[0]}`}
-                    alt="Product Image"
-                    className="border rounded-sm"
-                    width={60}
-                    height={60}
-                  />
+                  {product.imageIds && product.imageIds.length > 0 ? (
+                    <Image
+                      src={product.imageIds[0].startsWith('http') ? product.imageIds[0] : `${baseUrl}${product.imageIds[0]}`}
+                      alt="Product Image"
+                      className="border rounded-sm"
+                      width={60}
+                      height={60}
+                    />
+                  ) : (
+                    <div className="w-[60px] h-[60px] bg-gray-200 rounded-sm flex items-center justify-center text-xs text-gray-500">
+                      No image
+                    </div>
+                  )}
                 </TableCell>
                 <TableCell align="left">{product.title}</TableCell>
-                <TableCell align="center">{product.category}</TableCell>
+                <TableCell align="center">{product.type}</TableCell>
                 <TableCell align="center">
                   {product.featured.toString()}
                 </TableCell>

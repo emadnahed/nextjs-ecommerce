@@ -1,6 +1,27 @@
 import { Product } from "@/types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+// Automatically detect the correct API URL based on environment
+const getApiUrl = () => {
+  // If explicitly set, use that
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+
+  // In browser, use the current origin
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
+  }
+
+  // On Vercel, use VERCEL_URL
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+
+  // Default to localhost for development
+  return 'http://localhost:3000';
+};
+
+const API_URL = getApiUrl();
 
 /**
  * Converts imageIds to imageURLs for display
