@@ -52,7 +52,7 @@ export async function DELETE(
       },
     });
 
-    const imageKey = product?.imageURLs;
+    const imageKey = product?.imageIds;
 
     const task = await db.product.delete({
       where: {

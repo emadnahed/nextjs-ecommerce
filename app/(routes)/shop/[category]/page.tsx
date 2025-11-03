@@ -13,13 +13,13 @@ export async function generateMetadata({
   const data = await getCategoryProducts(params.category);
   if (!data || data.length <= 0)
     return {
-      title: "Kemal Store",
+      title: "Demo Store",
       description: "E-ecommerce, selling products, and new productivity",
     };
 
   return {
     title: `${
-      data[0]?.category[0]?.toUpperCase() + data[0]?.category.slice(1)
+      data[0]?.type?.[0]?.toUpperCase() + data[0]?.type?.slice(1)
     } | ${siteConfig.name}`,
     description: data[0]?.description,
   };

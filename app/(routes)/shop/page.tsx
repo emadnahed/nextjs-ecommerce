@@ -4,7 +4,7 @@ import filteredData from "@/app/utils/filteredData";
 import { Product } from "@/types";
 
 export const metadata = {
-  title: "Shop | Kemal Store",
+  title: "Shop | Demo Store",
   description: `Shop for e-ecommerce, selling products, and new productivity`,
 };
 

@@ -1,31 +1,39 @@
 export interface Product {
   id: string;
-  category: string;
+  type: string;
+  gender: string;
+  colors: string[];
+  material: string;
   description: string;
   title: string;
   price: string;
   featured: boolean;
-  imageURLs: string[];
+  inStock: boolean;
+  imageIds: string[];
+  imageURLs?: string[]; // Computed field for display
   discount?: number;
-  finalPrice?: number;
+  salePrice?: number;
+  sku?: string;
   size?: string;
+  productSizes?: ProductSize[];
+}
+
+export interface ProductSize {
+  id: string;
+  productId: string;
+  sizeId: string;
+  name?: string;
+  size?: Size;
+}
+
+export interface Size {
+  id: string;
+  name: string;
 }
 
 export interface Image {
   id: string;
   url: string;
-}
-
-export interface Billboard {
-  id: string;
-  label: string;
-  imageURL: string;
-}
-
-export interface Category {
-  id: string;
-  category: string;
-  billboardId: string;
 }
 
 export interface SelectedSize {
@@ -39,8 +47,11 @@ export interface RequestData {
   price: number;
   files: File[];
   featured: boolean;
-  category: string;
+  type: string;
+  gender: string;
+  colors: string[];
+  material: string;
   sizes: SelectedSize[];
-  categoryId: string;
   discount?: number;
+  sku?: string;
 }

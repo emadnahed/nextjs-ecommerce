@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-import useCart, { CartItem } from "@/hooks/use-cart";
+import useCart, { type CartItem } from "@/hooks/use-cart";
 import { Product } from "@/types";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
@@ -31,7 +31,7 @@ const CartItem: React.FC<CartItemProps> = ({ data }) => {
       <div className="relative h-24 w-24 rounded-md overflow-hidden sm:h-48 sm:w-48">
         <Image
           fill
-          src={`${baseUrl}${data.imageURLs[0]}`}
+          src={data.imageURLs?.[0] || "/placeholder.png"}
           alt=""
           className="object-cover object-center"
         />
@@ -52,7 +52,7 @@ const CartItem: React.FC<CartItemProps> = ({ data }) => {
 
           <div className="mt-1 flex text-sm">
             <p className="text-gray-500">
-              {data.category[0].toUpperCase() + data.category.slice(1)} /{" "}
+              {data.type?.[0]?.toUpperCase() + data.type?.slice(1)} /{" "}
               {data.size}
             </p>
           </div>
@@ -60,8 +60,8 @@ const CartItem: React.FC<CartItemProps> = ({ data }) => {
             <p className="text-lg text-gray-900 font-semibold">
               {data.totalPrice
                 ? `$${data.totalPrice.toFixed(2)}`
-                : data.finalPrice
-                ? `$${data.finalPrice.toFixed(2)}`
+                : data.salePrice
+                ? `$${Number(data.salePrice).toFixed(2)}`
                 : `$${Number(data?.price).toFixed(2)}`}
             </p>
             <div className="flex max-md:justify-end w-full">

@@ -7,15 +7,11 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import LoadingDots from "./loading-dots";
-import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 
 const Summary = () => {
   const [loading, setLoading] = useState<boolean>(false);
-
-  const { userId } = useAuth();
   const router = useRouter();
-
   const searchParams = useSearchParams();
   const items = useCart((state) => state.items);
   const removeAllCart = useCart((state) => state.removeAllCart);
@@ -37,18 +33,25 @@ const Summary = () => {
 
   const onCheckout = async () => {
     setLoading(true);
-    if (!userId) {
+    // Temporarily disable auth check
+    // if (!userId) {
+    //   setLoading(false);
+    //   return router.push("/sign-in");
+    // }
+    
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/checkout`,
+        {
+          items,
+        }
+      );
+      // Handle successful checkout
+      window.location = response.data.url;
+    } catch (error) {
+      toast.error("Something went wrong with checkout");
       setLoading(false);
-      return router.push("/sign-in");
     }
-    const response = await axios.post(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/checkout`,
-      {
-        items,
-      }
-    );
-    setLoading(false);
-    window.location = response.data.url;
   };
 
   return (

@@ -10,9 +10,9 @@ const Footer = () => {
           <a
             className="underline"
             target="_blank"
-            href="https://github.com/kemalkujovic"
+            href="https://github.com/emaadnahed"
           >
-            Kemal
+            Demo
           </a>
           , Inc. All rights reserved.
         </p>

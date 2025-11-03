@@ -4,25 +4,21 @@ import Gallery from "@/components/gallery/gallery";
 import Info from "@/components/gallery/info";
 import Container from "@/components/ui/container";
 import ProductCard from "@/components/ui/product-card";
-import { Category, type Product } from "@/types";
-import { useQueries, useQuery } from "@tanstack/react-query";
+import { type Product } from "@/types";
+import { useQueries } from "@tanstack/react-query";
 import axios from "axios";
 import { useParams } from "next/navigation";
 import LoadingSkeleton from "./loading-skeleton";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Link from "next/link";
-import { getCategories } from "@/lib/apiCalls";
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 
 const ProductItem = () => {
-  const [categories, setCategories] = useState([]);
   const { productId } = useParams();
 
   const [productQuery, relatedQuery] = useQueries({
     queries: [
       {
-        queryKey: ["single product"],
+        queryKey: ["single product", productId],
         queryFn: async () =>
           await axios.get(`/api/product/${productId}`).then((res) => res.data),
       },
@@ -34,21 +30,6 @@ const ProductItem = () => {
         },
       },
     ],
-  });
-
-  const { isLoading, data } = useQuery({
-    queryKey: ["product categories", productQuery],
-    queryFn: async () => {
-      const { data } = await axios.get(
-        `/api/sizes/${productQuery.data.categoryId}`
-      );
-      const sortedData = data.sort((a: any, b: any) => {
-        return a.name - b.name;
-      });
-      setCategories(sortedData);
-      return data;
-    },
-    enabled: !!productQuery.data?.categoryId,
   });
 
   if (productQuery.isLoading || relatedQuery.isLoading) {
@@ -63,9 +44,13 @@ const ProductItem = () => {
     return <Container>Something went wrong!</Container>;
   }
 
+  // Filter related products by same type and gender, excluding current product
   const filteredData: Product[] = relatedQuery?.data?.filter(
-    (item: Product) => item.category === productQuery?.data?.category && productQuery.data.id !== item.id
-  );
+    (item: Product) =>
+      item.type === productQuery?.data?.type &&
+      item.gender === productQuery?.data?.gender &&
+      productQuery.data.id !== item.id
+  ).slice(0, 4) || []; // Limit to 4 related products
 
   return (
     <div className="bg-white">
@@ -80,7 +65,6 @@ const ProductItem = () => {
             <div className="mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0">
               <Info
                 data={productQuery?.data}
-                categories={categories}
                 availableSizes={productQuery.data.productSizes}
               />
             </div>
@@ -89,9 +73,14 @@ const ProductItem = () => {
           <hr className="my-10" />
           <div className="space-y-4">
            {
-            filteredData.length > 0 && <h3 className="font-semibold text-3xl">Recommended</h3>
+            filteredData.length > 0 && (
+              <>
+                <h3 className="font-semibold text-3xl">You May Also Like</h3>
+                <p className="text-gray-600">Similar {productQuery.data.type}s for {productQuery.data.gender}</p>
+              </>
+            )
            }
-            <div className="grid grid-cols-1 sm:gird-cols-2 md:grid-cols-3 lg:gird-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredData?.map((item: Product) => {
                 return <ProductCard key={item.id} data={item} />;
               })}

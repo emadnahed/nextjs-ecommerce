@@ -2,13 +2,12 @@
 import { Button } from "@/components/ui/button";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ProductionQuantityLimitsIcon from "@mui/icons-material/ProductionQuantityLimits";
-import CategoryIcon from "@mui/icons-material/Category";
 import GradingIcon from "@mui/icons-material/Grading";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { usePathname, useRouter } from "next/navigation";
-import ArtTrackIcon from "@mui/icons-material/ArtTrack";
 import GroupIcon from "@mui/icons-material/Group";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
+import ImportExportIcon from "@mui/icons-material/ImportExport";
 
 const routes = [
   {
@@ -27,14 +26,9 @@ const routes = [
     href: `/admin/products`,
   },
   {
-    label: "Billboards",
-    icon: <ArtTrackIcon className="h-4 w-4 mr-2" />,
-    href: `/admin/billboards`,
-  },
-  {
-    label: "Categories",
-    icon: <CategoryIcon className="h-4 w-4 mr-2" />,
-    href: `/admin/categories`,
+    label: "Import/Export",
+    icon: <ImportExportIcon className="h-4 w-4 mr-2" />,
+    href: `/admin/products/import-export`,
   },
   {
     label: "Sizes",

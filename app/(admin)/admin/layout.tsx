@@ -2,17 +2,25 @@ import Navbar from "../_components/Navbar";
 import Sidebar from "../_components/Sidebar";
 import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs";
+import { isAdminByEmail } from "@/lib/admin-auth";
 
 export const metadata = {
-  title: "Admin | Kemal Store",
-  description: `Admin for e-ecommerce, selling products, and new productivity`,
+  title: "Admin | E-Commerce Store",
+  description: `Admin panel for e-commerce store management`,
 };
 
 const AdminLayout = async ({ children }: { children: React.ReactNode }) => {
   const user = await currentUser();
 
-  if (!user || !user.unsafeMetadata.isAdmin) {
+  // Check if user is authenticated
+  if (!user) {
     redirect("/sign-in");
+  }
+
+  // Check if user is in admin whitelist
+  const userEmail = user.emailAddresses[0]?.emailAddress;
+  if (!userEmail || !isAdminByEmail(userEmail)) {
+    redirect("/access-denied");
   }
 
   return (

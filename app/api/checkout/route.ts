@@ -1,63 +1,133 @@
-import Stripe from "stripe";
-
-import { stripe } from "@/lib/stripe";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { CartItem } from "@/hooks/use-cart";
-
-const base_URL = "https://kemal-web-storage.s3.eu-north-1.amazonaws.com";
+import { paymentService } from "@/lib/payment/payment-service";
+import { PaymentMethod } from "@/lib/payment/types";
 
 export async function POST(req: Request) {
-  const { items } = await req.json();
+  try {
+    const {
+      items,
+      paymentMethod,
+      customerName,
+      customerEmail,
+      customerPhone,
+      address,
+    } = await req.json();
 
-  if (!items || items.length === 0) {
-    return NextResponse.json("Product its are required", { status: 400 });
-  }
+    // Validate required fields
+    if (!items || items.length === 0) {
+      return NextResponse.json(
+        { error: "Cart items are required" },
+        { status: 400 }
+      );
+    }
 
-  const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
+    if (!paymentMethod) {
+      return NextResponse.json(
+        { error: "Payment method is required" },
+        { status: 400 }
+      );
+    }
 
-  items.forEach((product: CartItem) => {
-    line_items.push({
-      quantity: product.quantity,
-      price_data: {
-        currency: "USD",
-        product_data: {
-          name: product.title,
-          images: [`${base_URL}${product.imageURLs[0]}`],
+    if (!customerName || !customerPhone || !address) {
+      return NextResponse.json(
+        { error: "Customer details are required" },
+        { status: 400 }
+      );
+    }
+
+    // Calculate total amount
+    const totalAmount = items.reduce((sum: number, item: CartItem) => {
+      const price = item.salePrice || item.price;
+      return sum + parseFloat(String(price)) * item.quantity;
+    }, 0);
+
+    // Create order in database
+    const order = await db.order.create({
+      data: {
+        isPaid: false,
+        paymentMethod: paymentMethod,
+        paymentStatus: "pending",
+        customerName,
+        customerEmail: customerEmail || "",
+        phone: customerPhone,
+        address,
+        totalAmount,
+        orderItems: {
+          create: items.map((product: CartItem) => ({
+            productName: product.title,
+            quantity: product.quantity || 1,
+            size: product.size || null,
+            price: product.salePrice || parseFloat(String(product.price)),
+            product: {
+              connect: {
+                id: product.id,
+              },
+            },
+          })),
         },
-        unit_amount: +product.price * 100,
       },
     });
-  });
 
-  const order = await db.order.create({
-    data: {
-      isPaid: false,
-      orderItems: {
-        create: items.map((product: CartItem) => ({
-          productName: product.title,
-          product: {
-            connect: {
-              id: product.id,
-            },
-          },
-        })),
+    // Initialize payment with selected method
+    const paymentResponse = await paymentService.createPayment(
+      paymentMethod as PaymentMethod,
+      {
+        orderId: order.id,
+        amount: totalAmount,
+        currency: "INR",
+        customerName,
+        customerEmail: customerEmail || "",
+        customerPhone,
+        returnUrl: `${process.env.NEXT_PUBLIC_API_URL}/cart?success=1`,
+        metadata: {
+          orderId: order.id,
+        },
+      }
+    );
+
+    if (!paymentResponse.success) {
+      // Delete order if payment initialization failed
+      await db.order.delete({ where: { id: order.id } });
+
+      return NextResponse.json(
+        { error: paymentResponse.error || "Payment initialization failed" },
+        { status: 400 }
+      );
+    }
+
+    // Update order with payment ID
+    await db.order.update({
+      where: { id: order.id },
+      data: {
+        paymentId: paymentResponse.paymentId,
+        paymentStatus: paymentResponse.status,
       },
-    },
-  });
+    });
 
-  const session = await stripe.checkout.sessions.create({
-    line_items,
-    mode: "payment",
-    billing_address_collection: "required",
-    phone_number_collection: {
-      enabled: true,
-    },
-    success_url: `${process.env.FRONTEND_STORE_URL}/cart?success=1`,
-    cancel_url: `${process.env.FRONTEND_STORE_URL}/cart?canceled=1`,
-    metadata: {
-      orderdId: order.id,
-    },
-  });
-  return NextResponse.json({ url: session.url });
+    // Return appropriate response based on payment method
+    if (paymentResponse.paymentUrl) {
+      // For redirect-based payments (Cashfree)
+      return NextResponse.json({
+        success: true,
+        orderId: order.id,
+        paymentUrl: paymentResponse.paymentUrl,
+        message: paymentResponse.message,
+      });
+    } else {
+      // For COD and other non-redirect payments
+      return NextResponse.json({
+        success: true,
+        orderId: order.id,
+        message: paymentResponse.message || "Order placed successfully",
+      });
+    }
+  } catch (error: any) {
+    console.error("Checkout error:", error);
+    return NextResponse.json(
+      { error: error.message || "Checkout failed" },
+      { status: 500 }
+    );
+  }
 }

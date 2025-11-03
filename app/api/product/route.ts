@@ -1,26 +1,7 @@
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { auth } from "@clerk/nextjs";
-import { s3Client } from "@/lib/s3";
-
-async function uploadFileToS3(file: any, fileName: any) {
-  const fileBuffer = file;
-
-  const randomSuffix = Math.random().toString(36).substring(7);
-
-  const params = {
-    Bucket: process.env.NEXT_PUBLIC_AWS_S3_BUCKET_NAME,
-    Key: `products/${fileName}-${randomSuffix}`,
-    Body: fileBuffer,
-    ContentType: "image/jpg",
-  };
-
-  const command = new PutObjectCommand(params);
-  await s3Client.send(command);
-
-  return `/products/${fileName}-${randomSuffix}`;
-}
+import { uploadFile } from "@/lib/file-upload";
 
 export async function POST(req: Request) {
   const { userId } = auth();
@@ -34,17 +15,16 @@ export async function POST(req: Request) {
     const files = formData.getAll("files");
 
     const fileNames: string[] = [];
-    if (!files) {
+    if (!files || files.length === 0) {
       return NextResponse.json({ error: "File is required" }, { status: 400 });
     }
 
-    if (files) {
-      for (const file of Array.from(files)) {
-        if (file instanceof File) {
-          const buffer = Buffer.from(await file.arrayBuffer());
-          const fileName = await uploadFileToS3(buffer, file.name);
-          fileNames.push(fileName);
-        }
+    // Upload files to DigitalOcean Spaces and get image URLs
+    for (const file of Array.from(files)) {
+      if (file instanceof File) {
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const imageUrl = await uploadFile(buffer, file.name);
+        fileNames.push(imageUrl);
       }
     }
 
@@ -56,20 +36,28 @@ export async function POST(req: Request) {
       description,
       price,
       featured,
-      category,
+      type,
+      gender,
+      colors,
+      material,
       sizes,
-      categoryId,
       discount,
+      sku,
     } = productInfo;
 
+    // Validate required fields
     if (
       !title ||
       title.length < 4 ||
       !description ||
       description.length < 4 ||
       !price ||
-      !fileNames ||
-      !category
+      !fileNames.length ||
+      !type ||
+      !gender ||
+      !colors ||
+      !Array.isArray(colors) ||
+      colors.length === 0
     ) {
       return NextResponse.json(
         { error: "Missing required fields." },
@@ -77,23 +65,28 @@ export async function POST(req: Request) {
       );
     }
 
-    let priceDiscount: number = 0;
-    if (discount > 0) {
-      const mathDiscount = (discount / 100) * +price;
-      priceDiscount = +price - mathDiscount;
+    // Calculate sale price if discount exists
+    let salePrice: number | null = null;
+    if (discount && discount > 0) {
+      const discountAmount = (discount / 100) * +price;
+      salePrice = +price - discountAmount;
     }
 
     const product = await db?.product.create({
       data: {
         title,
         description,
-        price,
-        featured,
-        imageURLs: fileNames,
-        category,
-        categoryId,
-        discount,
-        finalPrice: priceDiscount,
+        price: +price,
+        featured: featured || false,
+        imageIds: fileNames,
+        type,
+        gender,
+        colors: Array.isArray(colors) ? colors : [colors],
+        material: material || "Cotton",
+        discount: discount ? +discount : null,
+        salePrice,
+        inStock: true,
+        sku: sku || null,
         productSizes: {
           create: sizes.map((size: any) => ({
             size: { connect: { id: size.id } },
@@ -102,9 +95,14 @@ export async function POST(req: Request) {
         },
       },
     });
-    return NextResponse.json({ msg: "Successful create product", product });
+
+    return NextResponse.json({ msg: "Successfully created product", product });
   } catch (error) {
-    return NextResponse.json({ error: "Error uploading file" });
+    console.error("Error creating product:", error);
+    return NextResponse.json({
+      error: "Error creating product",
+      details: error instanceof Error ? error.message : "Unknown error"
+    }, { status: 500 });
   }
 }
 
@@ -113,6 +111,10 @@ export async function GET(req: Request) {
     const tasks = await db.product.findMany();
     return NextResponse.json(tasks);
   } catch (error) {
-    return NextResponse.json({ error: "Error getting products", status: 500 });
+    console.error("Error getting products:", error);
+    return NextResponse.json(
+      { error: "Error getting products" },
+      { status: 500 }
+    );
   }
 }

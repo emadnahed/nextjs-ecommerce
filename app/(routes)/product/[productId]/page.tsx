@@ -13,7 +13,7 @@ export async function generateMetadata({
 
   if (!getProducts)
     return {
-      title: "Kemal Store",
+      title: "Demo Store",
       description: "E-ecommerce, selling products, and new productivity",
     };
 

@@ -10,7 +10,6 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: siteConfig.name,
-
   description: siteConfig.description,
   icons: [
     {
@@ -26,15 +25,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ReactQueryProvider>
+    <ClerkProvider>
       <html lang="en">
-        <ClerkProvider>
-          <body className={inter.className}>
+        <body className={inter.className}>
+          <ReactQueryProvider>
             <ToastProvider />
             {children}
-          </body>
-        </ClerkProvider>
+          </ReactQueryProvider>
+        </body>
       </html>
-    </ReactQueryProvider>
+    </ClerkProvider>
   );
 }

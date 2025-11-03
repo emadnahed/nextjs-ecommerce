@@ -1,27 +1,7 @@
 import { db } from "@/lib/db";
-
 import { NextResponse } from "next/server";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { auth } from "@clerk/nextjs";
-import { s3Client } from "@/lib/s3";
-
-async function uploadFileToS3(file: any, fileName: any) {
-  const fileBuffer = file;
-
-  const randomSuffix = Math.random().toString(36).substring(7);
-
-  const params = {
-    Bucket: process.env.NEXT_PUBLIC_AWS_S3_BUCKET_NAME,
-    Key: `products/${fileName}-${randomSuffix}`,
-    Body: fileBuffer,
-    ContentType: "image/jpg",
-  };
-
-  const command = new PutObjectCommand(params);
-  await s3Client.send(command);
-
-  return `/products/${fileName}-${randomSuffix}`;
-}
+import { uploadFile } from "@/lib/file-upload";
 
 export async function GET(
   req: Request,
@@ -67,24 +47,26 @@ export async function PUT(
     const title = formData.get("name") as string;
     const price = formData.get("price") as string;
     const description = formData.get("description") as string;
-    const category = formData.get("category") as string;
+    const type = formData.get("type") as string;
+    const gender = formData.get("gender") as string;
+    const colorsData = formData.get("colors") as string;
+    const colors = colorsData ? JSON.parse(colorsData) : [];
+    const material = formData.get("material") as string;
     const featured = formData.get("isFeatured");
-    const discount = formData.get("discount") as number | null;
+    const discount = formData.get("discount") as string | null;
+    const sku = formData.get("sku") as string | null;
     const isFeaturedBoolean = featured === "on";
     const files = formData.getAll("image");
     const fileNames: string[] = [];
-
-    if (!files) {
-      return NextResponse.json({ error: "File is required" }, { status: 400 });
-    }
 
     const sizes = JSON.parse(formData.get("productSizes") as string) as {
       sizeId: string;
       name: string;
     }[];
 
-    const convPirce = +price;
+    const convPrice = +price;
 
+    // Get existing sizes to determine which ones are new
     const existingSizes = await db.productSize.findMany({
       where: {
         productId: id,
@@ -94,18 +76,17 @@ export async function PUT(
       },
     });
 
-    const newSize = existingSizes.map((item) => item.id);
-    const existingSizes2 = sizes.filter((item, index) => item.sizeId);
-
-    const filteredExistingSizes2 = existingSizes2.filter(
-      (item: any) => !newSize.includes(item.id)
+    const existingSizeIds = existingSizes.map((item) => item.id);
+    const newSizes = sizes.filter((item) => item.sizeId);
+    const sizesToCreate = newSizes.filter(
+      (item: any) => !existingSizeIds.includes(item.id)
     );
 
-    let priceDiscount: number = 0;
-    
-    if (discount !== null && discount > 0) {
-      const mathDiscount = (discount / 100) * +price;
-      priceDiscount = +price - mathDiscount;
+    // Calculate sale price if discount exists
+    let salePrice: number | null = null;
+    if (discount && +discount > 0) {
+      const discountAmount = (+discount / 100) * convPrice;
+      salePrice = convPrice - discountAmount;
     }
 
     const updateData: {
@@ -113,11 +94,14 @@ export async function PUT(
       price: number;
       description: string;
       featured: boolean;
-      category: string;
-      finalPrice: number;
-      discount?: number;
-      imageURLs?: string[];
-
+      type: string;
+      gender: string;
+      colors: string[];
+      material: string;
+      salePrice: number | null;
+      discount: number | null;
+      sku: string | null;
+      imageIds?: string[];
       productSizes?: {
         create: {
           size: { connect: { id: string } };
@@ -127,30 +111,35 @@ export async function PUT(
     } = {
       featured: isFeaturedBoolean,
       title,
-      price: convPirce,
+      price: convPrice,
       description,
-      category,
-      finalPrice: priceDiscount,
+      type,
+      gender,
+      colors: Array.isArray(colors) ? colors : [colors],
+      material: material || "Cotton",
+      salePrice,
+      discount: discount ? +discount : null,
+      sku: sku || null,
       productSizes: {
-        create: filteredExistingSizes2.map((size: any) => ({
+        create: sizesToCreate.map((size: any) => ({
           size: { connect: { id: size.sizeId } },
           name: size.name,
         })),
       },
     };
 
-    if (discount !== null && discount > 0) {
-      updateData.discount = +discount;
-    }
-    
-    if (files) {
+    // Upload new files to DigitalOcean Spaces if provided
+    if (files && files.length > 0) {
       for (const file of Array.from(files)) {
         if (file instanceof File && file.name) {
           const buffer = Buffer.from(await file.arrayBuffer());
-          const fileName = await uploadFileToS3(buffer, file.name);
-          updateData.imageURLs = fileNames;
-          fileNames.push(fileName);
+          const imageUrl = await uploadFile(buffer, file.name);
+          fileNames.push(imageUrl);
         }
+      }
+
+      if (fileNames.length > 0) {
+        updateData.imageIds = fileNames;
       }
     }
 

@@ -11,45 +11,36 @@ model Product {
   id           String        @id @default(cuid()) @map("_id")
   title        String
   description  String
-  imageURLs    String[]
-  category     String
-  categoryId   String
-  price        Float
-  finalPrice   Float?
-  discount     Float?
-  featured     Boolean
+  imageIds     String[]      // Array of image URLs from DigitalOcean Spaces
+
+  // Clothing specific fields
+  type         String        // "T-Shirt", "Hoodie", "Shirt", "Blouse", "Dashiki", "Jacket", etc.
+  gender       String        // "Men", "Women", "Unisex"
+  colors       String[]      // Multiple color variants available
+  material     String        @default("Cotton") // "Cotton", "Cotton Blend", "Linen", etc.
+
+  // Pricing
+  price        Float         // Regular price
+  salePrice    Float?        // Sale price (if on sale)
+  discount     Float?        // Discount percentage
+
+  // Inventory & Features
+  featured     Boolean       @default(false)
+  inStock      Boolean       @default(true)
+  sku          String?       // Stock Keeping Unit (optional)
+
+  // Relations
   productSizes ProductSize[]
+  orderItems   OrderItem[]
 
   createdAt DateTime    @default(now()) @map("created_at")
   updatedAt DateTime    @default(now()) @updatedAt @map("updated_at")
-  OrderItem OrderItem[]
-}
-
-model Category {
-  id            String         @id @default(cuid()) @map("_id")
-  billboard     String
-  billboardId   String
-  category      String
-  categorySizes CategorySize[]
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
-}
-
-model Billboard {
-  id        String @id @default(cuid()) @map("_id")
-  billboard String
-  imageURL  String
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 }
 
 model Size {
   id            String         @id @default(cuid()) @map("_id")
-  name          String
+  name          String         @unique
   productSizes  ProductSize[]
-  categorySizes CategorySize[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
@@ -59,27 +50,13 @@ model ProductSize {
   id        String   @id @default(cuid()) @map("_id")
   productId String
   sizeId    String
-  product   Product? @relation(fields: [productId], references: [id])
+  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
   size      Size     @relation(fields: [sizeId], references: [id])
   name      String?  @map("name")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
   @@index([productId])
-  @@index([sizeId])
-}
-
-model CategorySize {
-  id         String   @id @default(cuid()) @map("_id")
-  categoryId String
-  sizeId     String
-  category   Category @relation(fields: [categoryId], references: [id])
-  size       Size     @relation(fields: [sizeId], references: [id])
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
-
-  @@index([categoryId])
   @@index([sizeId])
 }
 
@@ -90,6 +67,9 @@ model OrderItem {
   productId   String
   product     Product @relation(fields: [productId], references: [id])
   productName String
+  quantity    Int     @default(1)
+  size        String? // Size selected for this item
+  price       Float   // Price at time of purchase
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -99,11 +79,24 @@ model OrderItem {
 }
 
 model Order {
-  id         String      @id @default(cuid()) @map("_id")
-  orderItems OrderItem[]
-  isPaid     Boolean     @default(false)
-  phone      String      @default("")
-  address    String      @default("")
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  id              String      @id @default(cuid()) @map("_id")
+  orderItems      OrderItem[]
+
+  // Payment Information
+  isPaid          Boolean     @default(false)
+  paymentMethod   String      @default("cod") // "cod", "cashfree", "stripe"
+  paymentId       String?     // Payment gateway transaction ID
+  paymentStatus   String      @default("pending") // "pending", "success", "failed", "cancelled"
+
+  // Customer Information
+  customerName    String      @default("")
+  customerEmail   String      @default("")
+  phone           String      @default("")
+  address         String      @default("")
+
+  // Order totals
+  totalAmount     Float       @default(0)
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 }

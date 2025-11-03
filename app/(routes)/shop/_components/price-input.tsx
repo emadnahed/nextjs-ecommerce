@@ -41,10 +41,10 @@ const PriceInput = ({ data }: PriceInputProps) => {
         const urlString = pathName.substring("/shop/".length);
         const data = await getCategoryProducts(urlString);
         const prices = data?.map((product: Product) => {
-          if (product.finalPrice && product.finalPrice > 0) {
-            return product.finalPrice;
+          if (product.salePrice && product.salePrice > 0) {
+            return product.salePrice;
           } else {
-            return product.price;
+            return Number(product.price);
           }
         });
         setMaxPrice(Math.max(...prices));
@@ -52,10 +52,10 @@ const PriceInput = ({ data }: PriceInputProps) => {
         setValue(maxPrice);
       } else {
         const prices = data?.map((product: Product) => {
-          if (product.finalPrice && product.finalPrice > 0) {
-            return product.finalPrice;
+          if (product.salePrice && product.salePrice > 0) {
+            return product.salePrice;
           } else {
-            return +product.price;
+            return Number(product.price);
           }
         });
         setMaxPrice(Math.max(...prices));

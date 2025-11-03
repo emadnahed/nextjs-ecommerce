@@ -8,24 +8,28 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
-type Category = {
-  id: string;
-  name: string;
-  billboard: string;
-  category: string;
-};
-
 type initialState = {
   title: string;
   description: string;
   price: string;
-  category: string;
+  type: string;
+  gender: string;
+  colors: string[];
+  material: string;
   files: File[];
   isFeatured: boolean;
-  categoryId: string;
   sizes: SelectedSize[];
   discount?: string;
+  sku?: string;
 };
+
+const PRODUCT_TYPES = ["T-Shirt", "Hoodie", "Shirt", "Dashiki", "Blouse", "Long Sleeve", "Jacket"];
+const GENDERS = ["Men", "Women", "Unisex"];
+const COLORS = [
+  "Black", "White", "Navy", "Gray", "Blue", "Red", "Green",
+  "Pink", "Yellow", "Orange", "Purple", "Brown", "Beige",
+  "Plaid", "Multicolor", "Lavender", "Mint", "Peach", "Other"
+];
 
 const AddProduct = () => {
   const router = useRouter();
@@ -35,15 +39,17 @@ const AddProduct = () => {
     title: "",
     description: "",
     price: "",
-    category: "",
-    categoryId: "",
+    type: "",
+    gender: "",
+    colors: [],
+    material: "Cotton",
     files: [],
     isFeatured: false,
     sizes: selectedSizes,
     discount: "",
+    sku: "",
   };
 
-  const [category, setCategory] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [dataForm, setDataForm] = useState<initialState>(initialState);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -54,38 +60,23 @@ const AddProduct = () => {
     description: "",
     price: "",
     files: "",
-    category: "",
+    type: "",
+    gender: "",
+    colors: "",
   });
 
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchAllSizes = async () => {
       try {
-        const resCategory = await axios.get("/api/categories");
-        const data = resCategory.data;
-        setCategory(data);
-      } catch (error) {
-        console.log("Error getting categories", error);
-      }
-    };
-
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
-    const fetchSizesForCategory = async () => {
-      try {
-        const response = await axios.get(`/api/sizes/${dataForm.categoryId}`);
-
+        const response = await axios.get(`/api/sizes`);
         setAvailableSizes(response.data);
       } catch (error) {
-        console.error("Error fetching sizes for category:", error);
+        console.error("Error fetching sizes:", error);
       }
     };
 
-    if (dataForm.categoryId) {
-      fetchSizesForCategory();
-    }
-  }, [dataForm.categoryId]);
+    fetchAllSizes();
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = e.target.files as FileList;
@@ -114,7 +105,9 @@ const AddProduct = () => {
       description: "",
       price: "",
       files: "",
-      category: "",
+      type: "",
+      gender: "",
+      colors: "",
     });
 
     if (
@@ -124,7 +117,9 @@ const AddProduct = () => {
       dataForm.description.length < 4 ||
       !dataForm.price ||
       dataForm.files.length === 0 ||
-      !dataForm.category
+      !dataForm.type ||
+      !dataForm.gender ||
+      dataForm.colors.length === 0
     ) {
       setIsLoading(false);
       setErrors((prevErrors) => ({
@@ -140,7 +135,9 @@ const AddProduct = () => {
         price: !dataForm.price ? "Please enter a price" : "",
         files:
           dataForm.files.length === 0 ? "Please select at least one file" : "",
-        category: !dataForm.category ? "Please select a category" : "",
+        type: !dataForm.type ? "Please select a product type" : "",
+        gender: !dataForm.gender ? "Please select a gender" : "",
+        colors: dataForm.colors.length === 0 ? "Please select at least one color" : "",
       }));
 
       return;
@@ -154,12 +151,15 @@ const AddProduct = () => {
       price: convPrice,
       files: dataForm.files,
       featured: dataForm.isFeatured,
-      category: dataForm.category,
+      type: dataForm.type,
+      gender: dataForm.gender,
+      colors: dataForm.colors,
+      material: dataForm.material || "Cotton",
       sizes: selectedSizes,
-      categoryId: dataForm.categoryId,
+      sku: dataForm.sku || undefined,
     };
 
-    if (dataForm.discount !== undefined) {
+    if (dataForm.discount !== undefined && dataForm.discount !== "") {
       requestData.discount = +dataForm.discount;
     }
 
@@ -201,6 +201,20 @@ const AddProduct = () => {
     }
   };
 
+  const handleColorClick = (color: string) => {
+    if (!dataForm.colors.includes(color)) {
+      setDataForm((prevData) => ({
+        ...prevData,
+        colors: [...prevData.colors, color],
+      }));
+    } else {
+      setDataForm((prevData) => ({
+        ...prevData,
+        colors: prevData.colors.filter((c) => c !== color),
+      }));
+    }
+  };
+
   return (
     <div className="flex justify-center items-center max-md:justify-start">
       <form
@@ -218,6 +232,7 @@ const AddProduct = () => {
           onChange={(e) => setDataForm({ ...dataForm, title: e.target.value })}
         />
         {errors.title && <p className="text-red-500">{errors.title}</p>}
+
         <label htmlFor="price">Enter Product Price</label>
         <Input
           value={dataForm.price}
@@ -230,19 +245,21 @@ const AddProduct = () => {
           onChange={(e) => setDataForm({ ...dataForm, price: e.target.value })}
         />
         {errors.price && <p className="text-red-500">{errors.price}</p>}
-        <label htmlFor="discount">Enter Product Discount</label>
+
+        <label htmlFor="discount">Enter Product Discount (%)</label>
         <Input
           value={dataForm.discount}
           type="number"
           id="discount"
           min={5}
           max={70}
-          name="price"
-          placeholder="Enter Product discount"
+          name="discount"
+          placeholder="Enter Product discount (optional)"
           onChange={(e) =>
             setDataForm({ ...dataForm, discount: e.target.value })
           }
         />
+
         <label htmlFor="description">Enter Product Description</label>
         <Input
           value={dataForm.description}
@@ -258,38 +275,99 @@ const AddProduct = () => {
         {errors.description && (
           <p className="text-red-500">{errors.description}</p>
         )}
-        <label htmlFor="category">Choose a category</label>
+
+        <label htmlFor="type">Product Type</label>
         <select
           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-          name="category"
-          id="category"
+          name="type"
+          id="type"
           required
-          value={dataForm.category}
-          onChange={(e) => {
-            const selectedCategory = category.find(
-              (c) => c.category === e.target.value
-            );
-            setDataForm({
-              ...dataForm,
-              category: e.target.value,
-              categoryId: selectedCategory?.id || "",
-            });
-          }}
+          value={dataForm.type}
+          onChange={(e) => setDataForm({ ...dataForm, type: e.target.value })}
         >
-          <option value="">Select a category</option>
-          {category.length > 0 &&
-            category?.map((category) => {
-              return (
-                <option key={category.id} value={category.category}>
-                  {category.category}
-                </option>
-              );
-            })}
+          <option value="">Select product type</option>
+          {PRODUCT_TYPES.map((type) => (
+            <option key={type} value={type}>
+              {type}
+            </option>
+          ))}
         </select>
+        {errors.type && <p className="text-red-500">{errors.type}</p>}
+
+        <label htmlFor="gender">Gender</label>
+        <select
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          name="gender"
+          id="gender"
+          required
+          value={dataForm.gender}
+          onChange={(e) =>
+            setDataForm({ ...dataForm, gender: e.target.value })
+          }
+        >
+          <option value="">Select gender</option>
+          {GENDERS.map((gender) => (
+            <option key={gender} value={gender}>
+              {gender}
+            </option>
+          ))}
+        </select>
+        {errors.gender && <p className="text-red-500">{errors.gender}</p>}
+
+        <label htmlFor="colors">Colors (Select multiple)</label>
+        <div className="flex flex-wrap gap-2 border rounded-md p-3">
+          {COLORS.map((color) => (
+            <Button
+              key={color}
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => handleColorClick(color)}
+              className={
+                dataForm.colors.includes(color)
+                  ? "bg-blue-600 text-white hover:bg-blue-700 hover:text-white"
+                  : ""
+              }
+            >
+              {color}
+            </Button>
+          ))}
+        </div>
+        {dataForm.colors.length > 0 && (
+          <p className="text-sm text-gray-600">
+            Selected: {dataForm.colors.join(", ")}
+          </p>
+        )}
+        {errors.colors && <p className="text-red-500">{errors.colors}</p>}
+
+        <label htmlFor="material">Material</label>
+        <Input
+          value={dataForm.material}
+          type="text"
+          id="material"
+          name="material"
+          placeholder="e.g., Cotton, Cotton Blend, Linen"
+          onChange={(e) =>
+            setDataForm({ ...dataForm, material: e.target.value })
+          }
+        />
+
+        <label htmlFor="sku">SKU (Stock Keeping Unit) - Optional</label>
+        <Input
+          value={dataForm.sku}
+          type="text"
+          id="sku"
+          name="sku"
+          placeholder="e.g., TSH-BLK-001"
+          onChange={(e) =>
+            setDataForm({ ...dataForm, sku: e.target.value })
+          }
+        />
+
         <div className="my-2 gap-2 flex flex-wrap flex-col">
           {availableSizes.length > 0 && (
             <label htmlFor="size" className="pb-2">
-              Select a size for this product
+              Select sizes for this product
             </label>
           )}
           <ul className="flex items-center gap-4 flex-wrap">
@@ -311,6 +389,7 @@ const AddProduct = () => {
             ))}
           </ul>
         </div>
+
         <div className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
           <div>
             <input
@@ -326,7 +405,8 @@ const AddProduct = () => {
             <div>This product will appear on the home page</div>
           </div>
         </div>
-        <label htmlFor="image">Add Product Image</label>
+
+        <label htmlFor="image">Add Product Images</label>
         <Input
           type="file"
           id="image"
@@ -334,9 +414,10 @@ const AddProduct = () => {
           required
           onChange={handleFileChange}
           multiple
+          accept="image/*"
         />
         {errors.files && <p className="text-red-500">{errors.files}</p>}
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           {imagePreviews.map((preview, index) => (
             <Image
               key={index}
@@ -344,12 +425,13 @@ const AddProduct = () => {
               alt={`Preview ${index}`}
               width={100}
               height={100}
-              className="rounded-sm"
+              className="rounded-sm object-cover"
             />
           ))}
         </div>
+
         <Button disabled={isLoading} className="mt-2 bg-green-600">
-          Add Product
+          {isLoading ? "Creating..." : "Add Product"}
         </Button>
       </form>
     </div>

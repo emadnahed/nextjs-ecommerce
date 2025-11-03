@@ -17,11 +17,14 @@ export type createData = {
   price: number;
   id: string;
   imageURLs: string[];
-  category: string;
+  type: string;
+  gender: string;
+  colors: string[];
+  material: string;
   featured: boolean;
   productSizes?: SizeProduct[];
-  categoryId: string;
   discount?: number;
+  sku?: string;
 };
 const EditProduct = () => {
   const params = useParams();

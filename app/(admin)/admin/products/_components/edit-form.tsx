@@ -11,56 +11,65 @@ type EditFormProps = {
   onSubmit: (formData: FormData) => void;
 };
 
-type Category = {
-  id: string;
-  name: string;
-  billboard: string;
-  category: string;
-};
-
 type InitialType = {
   title: string;
   description: string;
   price: number;
-  category: string;
+  type: string;
+  gender: string;
+  colors: string[];
+  material: string;
   files: File[];
   isFeatured: boolean;
   productSizes?: SizeProduct[];
-  categoryId: string;
   discount?: number;
+  sku?: string;
 };
+
+const PRODUCT_TYPES = ["T-Shirt", "Hoodie", "Shirt", "Dashiki", "Blouse", "Long Sleeve", "Jacket"];
+const GENDERS = ["Men", "Women", "Unisex"];
+const COLORS = [
+  "Black", "White", "Navy", "Gray", "Blue", "Red", "Green",
+  "Pink", "Yellow", "Orange", "Purple", "Brown", "Beige",
+  "Plaid", "Multicolor", "Lavender", "Mint", "Peach", "Other"
+];
 
 const EditForm = ({ data, onSubmit }: EditFormProps) => {
   const {
     title,
     description,
     imageURLs,
-    category,
+    type,
+    gender,
+    colors,
+    material,
     price,
     featured,
     productSizes,
-    categoryId,
     discount,
+    sku,
   } = data;
-  const baseUrl = "https://kemal-web-storage.s3.eu-north-1.amazonaws.com";
 
   const initialState = {
     title,
     description,
     price,
-    category,
+    type,
+    gender,
+    colors: colors || [],
+    material: material || "Cotton",
     files: [],
     isFeatured: featured,
     productSizes: productSizes,
-    categoryId,
     discount,
+    sku: sku || "",
   };
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [checkbox, setCheckBox] = useState<boolean>(featured);
   const [previewImage, setPreviewImage] = useState<string[]>();
   const [dataForm, setDataForm] = useState<InitialType>(initialState);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [allSizes, setAllSizes] = useState([]);
 
   const handleCheckboxChange = () => {
     setCheckBox((prevCheck) => !prevCheck);
@@ -79,54 +88,43 @@ const EditForm = ({ data, onSubmit }: EditFormProps) => {
       title,
       description,
       price,
-      category,
+      type,
+      gender,
+      colors: colors || [],
+      material: material || "Cotton",
       files: [],
       isFeatured: featured,
       productSizes,
-      categoryId,
       discount,
+      sku: sku || "",
     });
   }, [
     featured,
     title,
     description,
     price,
-    category,
+    type,
+    gender,
+    colors,
+    material,
     imageURLs,
     productSizes,
-    categoryId,
     discount,
+    sku,
   ]);
 
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchAllSizes = async () => {
       try {
-        const resCategory = await axios.get("/api/categories");
-        const data = resCategory.data;
-        setCategories(data);
+        const response = await axios.get(`/api/sizes`);
+        setAllSizes(response.data);
       } catch (error) {
-        console.log("Error getting categories", error);
+        console.error("Error fetching sizes:", error);
       }
     };
 
-    fetchCategories();
+    fetchAllSizes();
   }, []);
-  const [categorySizes, setCategorySizes] = useState([]);
-
-  useEffect(() => {
-    const fetchCategorySizes = async () => {
-      try {
-        const response = await axios.get(`/api/sizes/${dataForm.categoryId}`);
-        setCategorySizes(response.data);
-      } catch (error) {
-        console.error("Error fetching sizes for category:", error);
-      }
-    };
-
-    if (dataForm.categoryId) {
-      fetchCategorySizes();
-    }
-  }, [dataForm.categoryId]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = e.target.files as FileList;
@@ -149,6 +147,7 @@ const EditForm = ({ data, onSubmit }: EditFormProps) => {
     const formData = new FormData(e.currentTarget);
     formData.append("isFeatured", checkbox.toString());
     formData.append("productSizes", JSON.stringify(dataForm.productSizes));
+    formData.append("colors", JSON.stringify(dataForm.colors));
     await onSubmit(formData);
 
     setIsLoading(false);
@@ -167,6 +166,23 @@ const EditForm = ({ data, onSubmit }: EditFormProps) => {
     });
   };
 
+  const handleColorClick = (color: string) => {
+    setDataForm((prevData) => {
+      const currentColors = prevData.colors || [];
+      if (!currentColors.includes(color)) {
+        return {
+          ...prevData,
+          colors: [...currentColors, color],
+        };
+      } else {
+        return {
+          ...prevData,
+          colors: currentColors.filter((c) => c !== color),
+        };
+      }
+    });
+  };
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -182,6 +198,7 @@ const EditForm = ({ data, onSubmit }: EditFormProps) => {
         placeholder="Enter Product name"
         onChange={(e) => setDataForm({ ...dataForm, title: e.target.value })}
       />
+
       <label htmlFor="price">Enter Product Price</label>
       <Input
         value={dataForm.price}
@@ -193,7 +210,8 @@ const EditForm = ({ data, onSubmit }: EditFormProps) => {
         placeholder="Enter Product price"
         onChange={(e) => setDataForm({ ...dataForm, price: +e.target.value })}
       />
-      <label htmlFor="discount">Enter Product Discount</label>
+
+      <label htmlFor="discount">Enter Product Discount (%)</label>
       <Input
         value={dataForm.discount || ""}
         type="number"
@@ -201,11 +219,12 @@ const EditForm = ({ data, onSubmit }: EditFormProps) => {
         min={5}
         max={70}
         name="discount"
-        placeholder="Enter Product discount"
+        placeholder="Enter Product discount (optional)"
         onChange={(e) =>
           setDataForm({ ...dataForm, discount: +e.target.value })
         }
       />
+
       <label htmlFor="description">Enter Product Description</label>
       <Input
         value={dataForm.description}
@@ -219,27 +238,98 @@ const EditForm = ({ data, onSubmit }: EditFormProps) => {
         }
       />
 
-      <label htmlFor="category">Choose a category</label>
+      <label htmlFor="type">Product Type</label>
       <select
         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-        name="category"
-        id="category"
-        value={dataForm.category}
-        onChange={(e) => setDataForm({ ...dataForm, category: e.target.value })}
+        name="type"
+        id="type"
+        required
+        value={dataForm.type}
+        onChange={(e) => setDataForm({ ...dataForm, type: e.target.value })}
       >
-        {categories.map((category) => (
-          <option key={category.id} value={category.category}>
-            {category.category}
+        <option value="">Select product type</option>
+        {PRODUCT_TYPES.map((type) => (
+          <option key={type} value={type}>
+            {type}
           </option>
         ))}
       </select>
-      {categorySizes.length > 0 && (
+
+      <label htmlFor="gender">Gender</label>
+      <select
+        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        name="gender"
+        id="gender"
+        required
+        value={dataForm.gender}
+        onChange={(e) =>
+          setDataForm({ ...dataForm, gender: e.target.value })
+        }
+      >
+        <option value="">Select gender</option>
+        {GENDERS.map((gender) => (
+          <option key={gender} value={gender}>
+            {gender}
+          </option>
+        ))}
+      </select>
+
+      <label htmlFor="colors">Colors (Select multiple)</label>
+      <div className="flex flex-wrap gap-2 border rounded-md p-3">
+        {COLORS.map((color) => (
+          <Button
+            key={color}
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => handleColorClick(color)}
+            className={
+              dataForm.colors?.includes(color)
+                ? "bg-blue-600 text-white hover:bg-blue-700 hover:text-white"
+                : ""
+            }
+          >
+            {color}
+          </Button>
+        ))}
+      </div>
+      {dataForm.colors && dataForm.colors.length > 0 && (
+        <p className="text-sm text-gray-600">
+          Selected: {dataForm.colors.join(", ")}
+        </p>
+      )}
+
+      <label htmlFor="material">Material</label>
+      <Input
+        value={dataForm.material}
+        type="text"
+        id="material"
+        name="material"
+        placeholder="e.g., Cotton, Cotton Blend, Linen"
+        onChange={(e) =>
+          setDataForm({ ...dataForm, material: e.target.value })
+        }
+      />
+
+      <label htmlFor="sku">SKU (Stock Keeping Unit) - Optional</label>
+      <Input
+        value={dataForm.sku}
+        type="text"
+        id="sku"
+        name="sku"
+        placeholder="e.g., TSH-BLK-001"
+        onChange={(e) =>
+          setDataForm({ ...dataForm, sku: e.target.value })
+        }
+      />
+
+      {allSizes.length > 0 && (
         <label htmlFor="size" className="pb-2">
           Select sizes for this product
         </label>
       )}
       <ul className="flex items-center gap-4 flex-wrap">
-        {categorySizes.map((size: any, index) => {
+        {allSizes.map((size: any) => {
           return (
             <Button
               type="button"
@@ -258,6 +348,7 @@ const EditForm = ({ data, onSubmit }: EditFormProps) => {
           );
         })}
       </ul>
+
       <div className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
         <div>
           <input
@@ -273,18 +364,22 @@ const EditForm = ({ data, onSubmit }: EditFormProps) => {
           <div>This product will appear on the home page</div>
         </div>
       </div>
-      <label htmlFor="image">Change Product Image</label>
+
+      <label htmlFor="image">Change Product Images</label>
       <Input
         type="file"
         id="image"
         name="image"
         onChange={handleFileChange}
         multiple
+        accept="image/*"
       />
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         {previewImage?.map((preview, index) => {
-          const isImageIncluded = imageURLs.includes(preview);
-          const imagePath = isImageIncluded ? `${baseUrl}${preview}` : preview;
+          // Check if it's a local uploaded image (starts with /uploads/)
+          const isLocalImage = preview.startsWith('/uploads/');
+          const imagePath = isLocalImage ? preview : preview;
+
           return (
             <Image
               key={index}
@@ -292,14 +387,15 @@ const EditForm = ({ data, onSubmit }: EditFormProps) => {
               alt={`Preview ${index}`}
               width={100}
               height={100}
-              className="rounded-sm"
+              className="rounded-sm object-cover"
               priority={true}
             />
           );
         })}
       </div>
+
       <Button disabled={isLoading} type="submit" className="mt-2 bg-green-600">
-        Save Changes
+        {isLoading ? "Saving..." : "Save Changes"}
       </Button>
     </form>
   );

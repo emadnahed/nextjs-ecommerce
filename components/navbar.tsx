@@ -13,7 +13,12 @@ import MobileSidebar from "@/app/(admin)/_components/mobile-sidebar";
 import NavItem from "./nav-item";
 
 const NavBar = async () => {
-  const user = await currentUser();
+  let user = null;
+  try {
+    user = await currentUser();
+  } catch (error) {
+    console.error("Error fetching current user:", error);
+  }
 
   return (
     <div className="border-b">
@@ -24,7 +29,7 @@ const NavBar = async () => {
             <NavItem />
           </MobileSidebar>
           <div className="flex items-center max-md:hidden">
-            <Logo />
+            {/* <Logo /> */}
             <NavItem />
           </div>
           <div className="max-md:hidden">

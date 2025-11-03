@@ -1,4 +1,4 @@
 export const siteConfig = {
-  name: "Kemal Store",
+  name: "Demo Store",
   description: "E-ecommerce, selling products, and new productivity",
 };

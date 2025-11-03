@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "Cart | Kemal Store",
+  title: "Cart | Demo Store",
   description: `Cart for e-ecommerce, selling products, and new productivity`,
 };
 
