@@ -17,13 +17,21 @@ const ProductCard: React.FC<ProductCard> = ({ data }) => {
 
   // Handle both local and S3 URLs
   const getImageUrl = (url: string) => {
-    if (url.startsWith('http')) {
-      // S3 or external URL
-      return url;
-    } else {
-      // Local upload
-      return url;
+    if (!url) return '/placeholder.png'; // Fallback for empty URLs
+
+    // Handle malformed concatenated URLs as a safety measure
+    const httpsIndex = url.indexOf('https://', 1);
+    const httpIndex = url.indexOf('http://', 1);
+
+    if (httpsIndex > 0) {
+      return url.substring(httpsIndex);
     }
+    if (httpIndex > 0) {
+      return url.substring(httpIndex);
+    }
+
+    // Return the URL as-is (already sanitized by server)
+    return url;
   };
 
   return (

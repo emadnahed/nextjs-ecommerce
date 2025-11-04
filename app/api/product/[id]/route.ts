@@ -3,6 +3,7 @@ import { s3Client } from "@/lib/s3";
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { auth } from "@clerk/nextjs";
 import { NextResponse } from "next/server";
+import { enrichProductWithImageURLs } from "@/lib/imageUrlHelper";
 
 export async function DELETE(
   req: Request,
@@ -96,7 +97,12 @@ export async function GET(
       },
     });
 
-    return NextResponse.json(product);
+    if (!product) {
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    }
+
+    const enriched = enrichProductWithImageURLs(product);
+    return NextResponse.json(enriched);
   } catch (error) {
     return NextResponse.json({ error: "Error getting product", status: 500 });
   }

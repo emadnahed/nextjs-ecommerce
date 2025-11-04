@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs";
 import { uploadFile } from "@/lib/file-upload";
+import { enrichProductsWithImageURLs } from "@/lib/imageUrlHelper";
 
 export async function POST(req: Request) {
   const { userId } = auth();
@@ -108,8 +109,9 @@ export async function POST(req: Request) {
 
 export async function GET(req: Request) {
   try {
-    const tasks = await db.product.findMany();
-    return NextResponse.json(tasks);
+    const products = await db.product.findMany();
+    const enrichedProducts = enrichProductsWithImageURLs(products);
+    return NextResponse.json(enrichedProducts);
   } catch (error) {
     console.error("Error getting products:", error);
     return NextResponse.json(

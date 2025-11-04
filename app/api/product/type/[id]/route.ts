@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
+import { enrichProductsWithImageURLs } from "@/lib/imageUrlHelper";
 
 /**
  * Get products by type (replaces old category endpoint)
@@ -26,7 +27,8 @@ export async function GET(
       },
     });
 
-    return NextResponse.json(products);
+    const enrichedProducts = enrichProductsWithImageURLs(products);
+    return NextResponse.json(enrichedProducts);
   } catch (error) {
     return NextResponse.json({ error: "Error getting products", status: 500 });
   }
