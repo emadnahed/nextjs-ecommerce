@@ -14,7 +14,7 @@ export async function generateMetadata({
   const data = await getProductsByTypeFromDB(params.category);
   if (!data || data.length <= 0)
     return {
-      title: "Demo Store",
+      title: "ZEYREY Store",
       description: "E-ecommerce, selling products, and new productivity",
     };
 

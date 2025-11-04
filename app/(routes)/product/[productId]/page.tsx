@@ -14,7 +14,7 @@ export async function generateMetadata({
 
   if (!getProducts)
     return {
-      title: "Demo Store",
+      title: "ZEYREY Store",
       description: "E-ecommerce, selling products, and new productivity",
     };
 

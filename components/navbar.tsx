@@ -28,8 +28,8 @@ const NavBar = async () => {
             <NavbarSearch />
             <NavItem />
           </MobileSidebar>
-          <div className="flex items-center max-md:hidden">
-            {/* <Logo /> */}
+          <div className="flex items-center gap-8 max-md:hidden">
+            <Logo />
             <NavItem />
           </div>
           <div className="max-md:hidden">

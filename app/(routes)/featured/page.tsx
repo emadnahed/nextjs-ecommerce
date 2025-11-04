@@ -5,7 +5,7 @@ import { Product } from "@/types";
 import ProductCard from "@/components/ui/product-card";
 
 export const metadata = {
-  title: "Featured | Demo Store",
+  title: "Featured | ZEYREY Store",
   description: `Featured for e-ecommerce, selling products, and new productivity`,
 };
 
