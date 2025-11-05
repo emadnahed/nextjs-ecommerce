@@ -67,14 +67,14 @@ const MyOrdersPage = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "success":
+      case "DELIVERED":
         return "text-green-600 bg-green-50";
-      case "pending":
+      case "PENDING":
         return "text-yellow-600 bg-yellow-50";
-      case "failed":
-        return "text-red-600 bg-red-50";
-      case "cancelled":
+      case "ON-HOLD":
         return "text-gray-600 bg-gray-50";
+      case "CANCELLED":
+        return "text-red-600 bg-red-50";
       default:
         return "text-gray-600 bg-gray-50";
     }
@@ -131,10 +131,10 @@ const MyOrdersPage = () => {
                   <div className="flex flex-col items-end gap-2">
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                        order.paymentStatus
+                        order.orderStatus
                       )}`}
                     >
-                      {order.paymentStatus.toUpperCase()}
+                      {order.orderStatus.toUpperCase()}
                     </span>
                     <p className="text-sm text-gray-600">
                       {getPaymentMethodLabel(order.paymentMethod)}

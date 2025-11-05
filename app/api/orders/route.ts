@@ -11,13 +11,26 @@ export async function GET(req: Request) {
 
   try {
     const orders = await db.order.findMany({
-      include: {
+      select: {
+        id: true,
+        isPaid: true,
+        phone: true,
+        address: true,
+        orderStatus: true,
         orderItems: {
-          include: {
+          select: {
+            id: true,
+            orderId: true,
+            productName: true,
             product: true
           }
-        }
+        },
+        createdAt: true,
+        updatedAt: true
       },
+      orderBy: {
+        createdAt: 'desc'
+      }
     });
     return NextResponse.json(orders);
   } catch (error) {

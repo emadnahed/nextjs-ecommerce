@@ -97,6 +97,7 @@ model Order {
 
   // Order totals
   totalAmount     Float       @default(0)
+  orderStatus     String      @default("PENDING") // Order status: PENDING, DELIVERED, CANCELLED, ON-HOLD
 
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
