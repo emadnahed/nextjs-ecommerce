@@ -6,8 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "/Users/emaad/Desktop/nextjs-ecommerce/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "/Users/emaad/Desktop/nextjs-ecommerce/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Form,
   FormControl,
@@ -16,7 +16,7 @@ import {
   FormLabel,
   FormMessage,
   FormDescription,
-} from "/Users/emaad/Desktop/nextjs-ecommerce/components/ui/form";
+} from "@/components/ui/form";
 import { toast } from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 import useCart from "@/hooks/use-cart";
