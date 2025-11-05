@@ -14,9 +14,9 @@ const PriceInput = ({ data }: PriceInputProps) => {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const [minPrice, setMinPrice] = useState<number>();
-  const [maxPrice, setMaxPrice] = useState<number>();
-  const [value, setValue] = useState<number>();
+  const [minPrice, setMinPrice] = useState<number>(0);
+  const [maxPrice, setMaxPrice] = useState<number>(0);
+  const [value, setValue] = useState<number>(0);
 
   const handleSortChange = useCallback(
     async (value: string) => {
@@ -37,42 +37,41 @@ const PriceInput = ({ data }: PriceInputProps) => {
 
   useEffect(() => {
     const fetchProductPrice = async () => {
+      let products = data;
+      
       if (pathName.startsWith("/shop/") && pathName !== "/shop") {
         const urlString = pathName.substring("/shop/".length);
-        const data = await getCategoryProducts(urlString);
-        const prices = data?.map((product: Product) => {
+        const categoryData = await getCategoryProducts(urlString);
+        products = categoryData || [];
+      }
+      
+      if (products && products.length > 0) {
+        const prices = products.map((product: Product) => {
           if (product.salePrice && product.salePrice > 0) {
-            return product.salePrice;
+            return parseFloat(product.salePrice.toString());
           } else {
-            return Number(product.price);
+            return parseFloat(product.price.toString());
           }
         });
-        setMaxPrice(Math.max(...prices));
-        setMinPrice(Math.min(...prices));
-        setValue(maxPrice);
-      } else {
-        const prices = data?.map((product: Product) => {
-          if (product.salePrice && product.salePrice > 0) {
-            return product.salePrice;
-          } else {
-            return Number(product.price);
-          }
-        });
-        setMaxPrice(Math.max(...prices));
-        setMinPrice(Math.min(...prices));
-        setValue(maxPrice);
+        
+        const max = Math.max(...prices);
+        const min = Math.min(...prices);
+        
+        setMaxPrice(max);
+        setMinPrice(min);
+        setValue(max);
       }
     };
 
     fetchProductPrice();
-  }, [pathName, data, maxPrice]);
+  }, [pathName, data]);
 
   return (
     <div className="range-container mt-2">
       <div className="range-label flex justify-between">
         <div className="flex flex-col gap-y-1">
           <p className="font-semibold">Price</p>
-          <span className="font-serif">${value?.toFixed(2)}</span>
+          <span className="font-serif">₹{value?.toLocaleString('en-IN')}</span>
         </div>
       </div>
       <input
@@ -80,7 +79,7 @@ const PriceInput = ({ data }: PriceInputProps) => {
         min={minPrice}
         max={maxPrice}
         value={value || 0}
-        step="0.01"
+        step="1"
         onChange={(e) => {
           handleSortChange(e.target.value);
           setValue(parseFloat(e.target.value));
