@@ -51,7 +51,7 @@ model ProductSize {
   productId String
   sizeId    String
   product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
-  size      Size     @relation(fields: [sizeId], references: [id])
+  size      Size     @relation(fields: [sizeId], references: [id], onDelete: Cascade)
   name      String?  @map("name")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
@@ -89,6 +89,7 @@ model Order {
   paymentStatus   String      @default("pending") // "pending", "success", "failed", "cancelled"
 
   // Customer Information
+  userId          String?     // Clerk user ID (optional for guest checkout)
   customerName    String      @default("")
   customerEmail   String      @default("")
   phone           String      @default("")
@@ -99,4 +100,6 @@ model Order {
 
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
+
+  @@index([userId])
 }

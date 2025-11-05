@@ -3,9 +3,12 @@ import { db } from "@/lib/db";
 import { CartItem } from "@/hooks/use-cart";
 import { paymentService } from "@/lib/payment/payment-service";
 import { PaymentMethod } from "@/lib/payment/types";
+import { auth } from "@clerk/nextjs";
 
 export async function POST(req: Request) {
   try {
+    const { userId } = auth();
+
     const {
       items,
       paymentMethod,
@@ -49,6 +52,7 @@ export async function POST(req: Request) {
         isPaid: false,
         paymentMethod: paymentMethod,
         paymentStatus: "pending",
+        userId: userId || null,
         customerName,
         customerEmail: customerEmail || "",
         phone: customerPhone,

@@ -2,6 +2,7 @@ import Image from "next/image";
 
 import useCart, { type CartItem } from "@/hooks/use-cart";
 import { Product } from "@/types";
+import { formatPrice } from "@/lib/utils/currency";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
@@ -59,10 +60,10 @@ const CartItem: React.FC<CartItemProps> = ({ data }) => {
           <div className="flex flex-col mt-2 gap-y-3 max-md:flex-row max-md:justify-between max-md:items-center">
             <p className="text-lg text-gray-900 font-semibold">
               {data.totalPrice
-                ? `$${data.totalPrice.toFixed(2)}`
+                ? formatPrice(data.totalPrice)
                 : data.salePrice
-                ? `$${Number(data.salePrice).toFixed(2)}`
-                : `$${Number(data?.price).toFixed(2)}`}
+                ? formatPrice(data.salePrice)
+                : formatPrice(Number(data?.price))}
             </p>
             <div className="flex max-md:justify-end w-full">
               <div className="border w-28 rounded-3xl p-2 gap-2 flex justify-between">

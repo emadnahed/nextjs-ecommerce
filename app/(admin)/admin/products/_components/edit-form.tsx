@@ -69,7 +69,7 @@ const EditForm = ({ data, onSubmit }: EditFormProps) => {
   const [checkbox, setCheckBox] = useState<boolean>(featured);
   const [previewImage, setPreviewImage] = useState<string[]>();
   const [dataForm, setDataForm] = useState<InitialType>(initialState);
-  const [allSizes, setAllSizes] = useState([]);
+  const [allSizes, setAllSizes] = useState<Array<{ id: string; name: string }>>([]);
 
   const handleCheckboxChange = () => {
     setCheckBox((prevCheck) => !prevCheck);
@@ -146,23 +146,49 @@ const EditForm = ({ data, onSubmit }: EditFormProps) => {
     setIsLoading(true);
     const formData = new FormData(e.currentTarget);
     formData.append("isFeatured", checkbox.toString());
-    formData.append("productSizes", JSON.stringify(dataForm.productSizes));
-    formData.append("colors", JSON.stringify(dataForm.colors));
-    await onSubmit(formData);
-
-    setIsLoading(false);
+    
+    // Ensure we're sending the correct format for productSizes
+    const sizesToSend = dataForm.productSizes?.map(size => ({
+      sizeId: size.sizeId,
+      name: size.name
+    })) || [];
+    
+    formData.append("productSizes", JSON.stringify(sizesToSend));
+    formData.append("colors", JSON.stringify(dataForm.colors || []));
+    
+    try {
+      await onSubmit(formData);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSizeClick = (sizeId: string, sizeName: string) => {
-    setDataForm((prevData: any) => {
-      const updatedProductSizes: { sizeId: string; name: string }[] =
-        prevData.productSizes || [];
-      const newSize = { sizeId, name: sizeName };
-      if (!updatedProductSizes.some((size) => size.sizeId === newSize.sizeId)) {
-        updatedProductSizes.push(newSize);
+    setDataForm((prevData) => {
+      const currentSizes = Array.isArray(prevData.productSizes) ? [...prevData.productSizes] : [];
+      const existingIndex = currentSizes.findIndex(
+        (size: any) => size?.sizeId === sizeId || size?.id === sizeId
+      );
+
+      if (existingIndex >= 0) {
+        // Remove the size if it exists
+        currentSizes.splice(existingIndex, 1);
+      } else {
+        // Add the size if it doesn't exist
+        currentSizes.push({
+          sizeId,
+          name: sizeName,
+          // Keep existing id if present (for updates)
+          ...(currentSizes[existingIndex]?.id && { id: currentSizes[existingIndex].id })
+        });
       }
 
-      return { ...prevData, productSizes: updatedProductSizes };
+      return {
+        ...prevData,
+        productSizes: currentSizes
+      };
     });
   };
 
@@ -323,23 +349,23 @@ const EditForm = ({ data, onSubmit }: EditFormProps) => {
         }
       />
 
-      {allSizes.length > 0 && (
-        <label htmlFor="size" className="pb-2">
-          Select sizes for this product
-        </label>
-      )}
-      <ul className="flex items-center gap-4 flex-wrap">
+      <label htmlFor="sizes">Sizes (Select multiple)</label>
+      <div className="flex flex-wrap gap-2 border rounded-md p-3">
         {allSizes.map((size: any) => {
+          const isSelected = dataForm.productSizes?.some(
+            (productSize: any) => 
+              productSize?.sizeId === size.id || productSize?.id === size.id
+          );
           return (
             <Button
               type="button"
               key={size.id}
+              variant="outline"
+              size="sm"
               onClick={() => handleSizeClick(size.id, size.name)}
               className={
-                dataForm.productSizes?.some(
-                  (productSize: any) => productSize.sizeId === size.id
-                )
-                  ? "bg-green-500 text-white"
+                isSelected
+                  ? "bg-blue-600 text-white hover:bg-blue-700 hover:text-white"
                   : ""
               }
             >
@@ -347,7 +373,12 @@ const EditForm = ({ data, onSubmit }: EditFormProps) => {
             </Button>
           );
         })}
-      </ul>
+      </div>
+      {dataForm.productSizes && dataForm.productSizes.length > 0 && (
+        <p className="text-sm text-gray-600">
+          Selected: {dataForm.productSizes.map((s: any) => s.name).filter(Boolean).join(", ")}
+        </p>
+      )}
 
       <div className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
         <div>

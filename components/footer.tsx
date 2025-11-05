@@ -1,5 +1,3 @@
-import Logo from "./Logo";
-
 const Footer = () => {
   return (
     // <footer className="bg-white border-t">
@@ -26,10 +24,10 @@ const Footer = () => {
             href="https://github.com/emaadnahed"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center hover:opacity-75 transition"
+            className="flex items-center hover:opacity-75 transition mx-1"
           >
-            <span className="mx-1">
-              <Logo />
+            <span className="text-1xl font-light tracking-[0.2em] text-gray-800 uppercase">
+              ZEYREY
             </span>
           </a>
           <span>Inc. All rights reserved.</span>

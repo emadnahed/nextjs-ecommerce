@@ -8,13 +8,14 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import axios from "axios";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Spinner from "@/components/Spinner";
 import formatDate, { sortByDate } from "@/app/utils/formateDate";
 import ReactPaginate from "react-paginate";
 import { useState } from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import toast from "react-hot-toast";
 
 type Sizes = {
   id: string;
@@ -25,7 +26,9 @@ type Sizes = {
 
 const TableSizes = () => {
   const [currentPage, setCurrentPage] = useState(0);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const productsPerPage = 5;
+  const queryClient = useQueryClient();
 
   const { error, data, isLoading } = useQuery({
     queryKey: ["sizes"],
@@ -41,6 +44,26 @@ const TableSizes = () => {
 
   const handlePageClick = (selectedPage: { selected: number }) => {
     setCurrentPage(selectedPage.selected);
+  };
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete size "${name}"?\n\nThis will remove this size from all products that use it.`)) {
+      return;
+    }
+
+    setDeleting(id);
+    try {
+      const response = await axios.delete(`/api/sizes/${id}`);
+      toast.success(response.data.message || "Size deleted successfully");
+
+      // Invalidate queries to refresh the data
+      queryClient.invalidateQueries({ queryKey: ["sizes"] });
+    } catch (error: any) {
+      console.error("Error deleting size:", error);
+      toast.error(error.response?.data?.error || "Failed to delete size");
+    } finally {
+      setDeleting(null);
+    }
   };
 
   if (isLoading) {
@@ -87,10 +110,14 @@ const TableSizes = () => {
                   {formatDate(order.createdAt)}
                 </TableCell>
                 <TableCell align="right">
-                  <button>
-                    <DeleteIcon className="text-red-600" />
+                  <button
+                    onClick={() => handleDelete(order.id, order.name)}
+                    disabled={deleting === order.id}
+                    className="disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Delete size"
+                  >
+                    <DeleteIcon className="text-red-600 hover:text-red-800" />
                   </button>
-                  <EditIcon />
                 </TableCell>
               </TableRow>
             ))}

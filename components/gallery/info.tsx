@@ -5,6 +5,7 @@ import { Product } from "@/types";
 import { Button } from "../ui/button";
 import useCart from "@/hooks/use-cart";
 import { useState } from "react";
+import { formatPrice } from "@/lib/utils/currency";
 
 interface InfoProps {
   data: Product;
@@ -41,19 +42,19 @@ const Info: React.FC<InfoProps> = ({ data, availableSizes }) => {
           <div className="font-semibold">
             <div className="flex items-center gap-2">
               <span className="text-gray-500 line-through">
-                ${Number(data?.price).toFixed(2)}
+                {formatPrice(data?.price)}
               </span>
               <div className="bg-red-600 text-sm text-white p-1 px-2 font-semibold rounded-sm">
                 -{data?.discount}% OFF
               </div>
             </div>
             <p className="text-2xl text-gray-900 font-semibold mt-1">
-              ${Number(data.salePrice).toFixed(2)}
+              {formatPrice(data.salePrice)}
             </p>
           </div>
         ) : (
           <p className="text-2xl text-gray-900 font-semibold">
-            ${Number(data?.price).toFixed(2)}
+            {formatPrice(data?.price)}
           </p>
         )}
       </div>

@@ -1,3 +1,5 @@
+"use client";
+
 import Container from "./ui/container";
 import Logo from "./Logo";
 import NavbarActions from "./navbar-actions";
@@ -5,20 +7,16 @@ import {
   SignInButton,
   SignUpButton,
   UserButton,
-  currentUser,
+  useUser,
 } from "@clerk/nextjs";
 import { Button } from "./ui/button";
 import NavbarSearch from "./navbar-search";
 import MobileSidebar from "@/app/(admin)/_components/mobile-sidebar";
 import NavItem from "./nav-item";
+import { useEffect, useState } from "react";
 
-const NavBar = async () => {
-  let user = null;
-  try {
-    user = await currentUser();
-  } catch (error) {
-    console.error("Error fetching current user:", error);
-  }
+const NavBar = () => {
+  const { isLoaded, isSignedIn } = useUser();
 
   return (
     <div className="border-b">
@@ -37,7 +35,7 @@ const NavBar = async () => {
           </div>
           <div className="flex items-center">
             <NavbarActions />
-            {user ? (
+            {isLoaded && isSignedIn ? (
               <div className="ml-2">
                 <UserButton
                   afterSignOutUrl="/"
@@ -51,7 +49,7 @@ const NavBar = async () => {
                   }}
                 />
               </div>
-            ) : (
+            ) : isLoaded ? (
               <div className="flex items-center gap-2 ml-2">
                 <Button className="rounded-sm" asChild>
                   <SignUpButton />
@@ -60,7 +58,7 @@ const NavBar = async () => {
                   <SignInButton />
                 </Button>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       </Container>

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Product } from "@/types";
+import { formatPrice } from "@/lib/utils/currency";
 
 interface ProductCard {
   data: Product;
@@ -80,13 +81,13 @@ const ProductCard: React.FC<ProductCard> = ({ data }) => {
       <div className="flex items-center justify-between">
         {data.salePrice && data.salePrice > 0 ? (
           <div className="font-semibold">
-            ${Number(data.salePrice).toFixed(2)}{" "}
-            <span className="text-gray-500 line-through text-sm">
-              ${Number(data?.price).toFixed(2)}
+            {formatPrice(data.salePrice)}
+            <span className="text-gray-500 line-through text-sm ml-1">
+              {formatPrice(data?.price)}
             </span>
           </div>
         ) : (
-          <div className="font-semibold">${Number(data?.price).toFixed(2)}</div>
+          <div className="font-semibold">{formatPrice(data?.price)}</div>
         )}
       </div>
     </div>

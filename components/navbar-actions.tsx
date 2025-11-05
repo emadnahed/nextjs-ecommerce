@@ -3,12 +3,15 @@
 import { useRouter } from "next/navigation";
 
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import { Package } from "lucide-react";
 import useCart from "@/hooks/use-cart";
 import { useEffect, useState } from "react";
 import Badge from "@mui/material/Badge";
+import { useUser } from "@clerk/nextjs";
 
 const NavbarActions = () => {
   const [isMounted, setIsMounted] = useState(false);
+  const { isSignedIn } = useUser();
 
   useEffect(() => {
     setIsMounted(true);
@@ -29,6 +32,15 @@ const NavbarActions = () => {
 
   return (
     <div className="flex items-center gap-x-4">
+      {isSignedIn && (
+        <button
+          onClick={() => router.push("/my-orders")}
+          className="flex items-center px-[6px] py-1 hover:opacity-75 transition"
+          title="My Orders"
+        >
+          <Package size={24} />
+        </button>
+      )}
       <button
         onClick={() => router.push("/cart")}
         className="flex items-center px-[6px] py-1"

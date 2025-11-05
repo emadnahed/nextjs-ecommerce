@@ -10,7 +10,7 @@ export interface Product {
   featured: boolean;
   inStock: boolean;
   imageIds: string[];
-  imageURLs?: string[]; // Computed field for display
+  imageURLs: string[]; // Required field for display
   discount?: number;
   salePrice?: number;
   sku?: string;
