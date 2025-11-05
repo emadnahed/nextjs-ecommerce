@@ -19,6 +19,7 @@ import { useState } from "react";
 import ReactPaginate from "react-paginate";
 import formatDate, { sortByDate } from "@/app/utils/formateDate";
 import TitleHeader from "@/app/(admin)/_components/title-header";
+import { formatPrice } from "@/lib/utils/currency";
 
 type createData = {
   title: string;
@@ -137,7 +138,7 @@ export default function ProductTable() {
                 <TableCell align="center">
                   {product.featured.toString()}
                 </TableCell>
-                <TableCell align="center">${product.price}</TableCell>
+                <TableCell align="center">{formatPrice(product.price)}</TableCell>
                 <TableCell align="center">
                   {product.description.slice(0, 11)}
                   {product.description.length > 12 && "..."}

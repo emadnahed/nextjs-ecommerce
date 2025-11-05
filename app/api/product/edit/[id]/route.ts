@@ -66,28 +66,19 @@ export async function PUT(
 
     const convPrice = +price;
 
-    // Get existing sizes to determine which ones are new
-    const existingSizes = await db.productSize.findMany({
-      where: {
-        productId: id,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    const existingSizeIds = existingSizes.map((item) => item.id);
-    const newSizes = sizes.filter((item) => item.sizeId);
-    const sizesToCreate = newSizes.filter(
-      (item: any) => !existingSizeIds.includes(item.id)
-    );
-
     // Calculate sale price if discount exists
     let salePrice: number | null = null;
     if (discount && +discount > 0) {
       const discountAmount = (+discount / 100) * convPrice;
       salePrice = convPrice - discountAmount;
     }
+
+    // Delete all existing ProductSize records for this product
+    await db.productSize.deleteMany({
+      where: {
+        productId: id,
+      },
+    });
 
     const updateData: {
       title: string;
@@ -120,12 +111,13 @@ export async function PUT(
       salePrice,
       discount: discount ? +discount : null,
       sku: sku || null,
-      productSizes: {
-        create: sizesToCreate.map((size: any) => ({
+      // Create new ProductSize records for all selected sizes
+      productSizes: sizes && sizes.length > 0 ? {
+        create: sizes.map((size: any) => ({
           size: { connect: { id: size.sizeId } },
           name: size.name,
         })),
-      },
+      } : undefined,
     };
 
     // Upload new files to DigitalOcean Spaces if provided
