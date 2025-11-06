@@ -147,6 +147,19 @@ export function CheckoutForm({ onSuccess, onBack }: CheckoutFormProps) {
     return lines;
   };
 
+  // For card rendering: use only PostOffice data so cards do not change when user edits inputs
+  const buildPoLines = (po: any) => {
+    const district = toUpper(po?.District);
+    const state = toUpper(po?.State);
+    const pin = safe(po?.Pincode);
+    const country = toUpper(po?.Country || "India");
+    const lines: string[] = [
+      [district, state, pin].filter(Boolean).join(" "),
+      country,
+    ].filter(Boolean);
+    return lines;
+  };
+
   const onSubmit = async (data: CheckoutFormValues) => {
     if (items.length === 0) {
       toast.error("Your cart is empty");
@@ -332,22 +345,16 @@ export function CheckoutForm({ onSuccess, onBack }: CheckoutFormProps) {
                                     />
                                     <div className="flex-1 min-w-0 pr-10">
                                       <h4 className="font-bold text-base leading-tight text-gray-900 mb-3 break-all overflow-wrap-anywhere">
-                                        {toUpper(customerName || po.Name)}
+                                        <div className="font-extrabold text-[13px] tracking-wide">
+                                          {toUpper(po.Name)}
+                                        </div>
+                                        <div className="mt-2 space-y-1.5 leading-5">
+                                          {buildPoLines(po).map((line, li) => (
+                                            <div key={li} className="text-xs text-gray-800 break-words">{line}</div>
+                                          ))}
+                                        </div>
                                       </h4>
-
-                                      {/* Address Section */}
-                                      <div className="space-y-1 text-[13px] leading-relaxed text-gray-700">
-                                        {buildAddressLines(po).map((line, li) => (
-                                          <p key={li} className="break-words overflow-wrap-anywhere">{line}</p>
-                                        ))}
-                                      </div>
-
-                                      {/* Phone Number */}
-                                      {safe(customerPhone) && (
-                                        <p className="mt-3 text-[13px] text-gray-700 break-words">
-                                          <span className="font-medium">Phone:</span> {safe(customerPhone)}
-                                        </p>
-                                      )}
+                                      {/* Intentionally not showing customer phone here to avoid card content changing based on inputs */}
                                     </div>
 
                                     {/* Checkmark Icon */}
