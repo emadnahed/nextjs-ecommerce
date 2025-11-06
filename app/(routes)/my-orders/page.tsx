@@ -24,7 +24,8 @@ type Order = {
   id: string;
   isPaid: boolean;
   paymentMethod: string;
-  paymentStatus: string;
+  paymentStatus: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
+  orderStatus?: 'PENDING' | 'DELIVERED' | 'CANCELLED' | 'ON-HOLD';
   customerName: string;
   phone: string;
   address: string;
@@ -128,17 +129,36 @@ const MyOrdersPage = () => {
                     </p>
                   </div>
 
-                  <div className="flex flex-col items-end gap-2">
+                  <div className="flex flex-col items-end gap-2">                    
+                    <span>
+                    <span className="text-black-500">Delivery Status: </span>
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                        order.orderStatus
+                        order.orderStatus || 'PENDING'
                       )}`}
                     >
-                      {order.orderStatus.toUpperCase()}
+                      {(order.orderStatus || 'PENDING').toUpperCase()}
                     </span>
-                    <p className="text-sm text-gray-600">
+                    </span>
+                    <span>
+                    <span className="text-black-500">Payment Status: </span>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        order.isPaid || (order.paymentStatus || '').toUpperCase() === 'PAID' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}
+                    >
+                      {order.isPaid || (order.paymentStatus || '').toUpperCase() === 'PAID' ? 'PAID' : 'UNPAID'}
+                    </span>
+                    </span>
+                    {/* paymentMethod */}
+                    <span>
+                    <span className="text-black-500">Payment Method: </span>
+                    <span className="text-sm text-gray-600">                      
                       {getPaymentMethodLabel(order.paymentMethod)}
-                    </p>
+                    </span>
+                    </span>
                   </div>
                 </div>
 

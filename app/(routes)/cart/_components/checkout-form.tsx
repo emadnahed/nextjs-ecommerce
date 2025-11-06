@@ -367,37 +367,7 @@ export function CheckoutForm({ onSuccess, onBack }: CheckoutFormProps) {
                                     )}
                                   </div>
 
-                                  {/* Delivery Instructions Toggle */}
-                                  <div className="mt-4 pt-4 border-t border-gray-200">
-                                    <button
-                                      type="button"
-                                      className="text-[13px] font-medium text-blue-600 hover:text-blue-700 hover:underline transition-colors"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        setOpenInstructionsFor((prev) => (prev === value ? "" : value));
-                                      }}
-                                    >
-                                      {showInstructions ? "Hide delivery instructions" : "Add delivery instructions"}
-                                    </button>
-                                  </div>
                                 </label>
-
-                                {/* Delivery Instructions Textarea - Outside label */}
-                                {showInstructions && (
-                                  <div className="mt-2 px-5 pb-2">
-                                    <Textarea
-                                      placeholder="E.g., Call before delivery, Leave at door, etc."
-                                      className="min-h-[90px] w-full text-sm border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-0 focus:ring-offset-0 resize-none"
-                                      value={form.watch("notes") || ""}
-                                      onChange={(e) => {
-                                        e.stopPropagation();
-                                        form.setValue("notes", e.target.value);
-                                      }}
-                                      onClick={(e) => e.stopPropagation()}
-                                    />
-                                  </div>
-                                )}
                               </div>
                             );
                           })

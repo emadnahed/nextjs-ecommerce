@@ -20,15 +20,26 @@ type OrderItem = {
   id: string;
   orderId: string;
   productName: string;
+  product?: {
+    id: string;
+    name: string;
+    imageUrl?: string;
+    imageIds?: string[];
+    images?: Array<{ url: string }> | string;
+  };
 };
 
 type Order = {
   id: string;
   isPaid: boolean;
+  paymentMethod: string;
+  paymentStatus: 'PAID' | 'UNPAID';
+  orderStatus: 'PENDING' | 'DELIVERED' | 'CANCELLED' | 'ON-HOLD';
+  customerName: string;
   phone: string;
   address: string;
+  totalAmount: number;
   createdAt: string;
-  orderStatus: 'PENDING' | 'DELIVERED' | 'CANCELLED' | 'ON-HOLD';
   orderItems: OrderItem[];
 };
 
@@ -38,7 +49,10 @@ const TableOrders = () => {
   const queryClient = useQueryClient();
 
   const updateOrderStatus = useMutation({
-    mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
+    mutationFn: async ({ orderId, status }: { 
+      orderId: string; 
+      status: 'PENDING' | 'DELIVERED' | 'CANCELLED' | 'ON-HOLD' 
+    }) => {
       const { data } = await axios.patch(`/api/orders/${orderId}`, { status });
       return data;
     },
@@ -51,17 +65,49 @@ const TableOrders = () => {
     },
   });
 
+  const updatePaymentStatus = useMutation({
+    mutationFn: async ({
+      orderId,
+      paymentStatus
+    }: {
+      orderId: string;
+      paymentStatus: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED'
+    }) => {
+      const { data } = await axios.patch(`/api/orders/${orderId}/payment`, { 
+        paymentStatus: paymentStatus // This will be mapped in the API
+      });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      toast.success("Payment status updated successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.error || "Failed to update payment status");
+    },
+  });
+
   const handleStatusChange = (orderId: string, event: SelectChangeEvent) => {
     const newStatus = event.target.value as 'PENDING' | 'DELIVERED' | 'CANCELLED' | 'ON-HOLD';
     updateOrderStatus.mutate({ orderId, status: newStatus });
   };
 
+  const handlePaymentStatusChange = (orderId: string, event: SelectChangeEvent) => {
+    const newPaymentStatus = event.target.value as 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
+    updatePaymentStatus.mutate({ orderId, paymentStatus: newPaymentStatus });
+  };
+
   const { error, data, isLoading } = useQuery<Order[]>({
     queryKey: ["orders"],
     queryFn: async () => {
-      const { data } = await axios.get("/api/orders");
-      const sortedData = sortByDate(data);
-      return sortedData;
+      try {
+        const { data } = await axios.get("/api/orders");
+        console.log("Orders data:", data); // Debug log
+        return sortByDate(data || []);
+      } catch (err) {
+        console.error("Error fetching orders:", err);
+        return [];
+      }
     },
   });
 
@@ -79,6 +125,92 @@ const TableOrders = () => {
   if (error) {
     return <p>Something went wrong!</p>;
   }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'PENDING':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'DELIVERED':
+        return 'bg-green-100 text-green-800';
+      case 'CANCELLED':
+        return 'bg-red-100 text-red-800';
+      case 'ON-HOLD':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getPaymentStatusColor = (status: string) => {
+    // Normalize status to uppercase for comparison
+    const normalizedStatus = status.toUpperCase();
+    
+    if (normalizedStatus === 'PAID' || normalizedStatus === 'SUCCESS') {
+      return 'bg-green-100 text-green-800';
+    }
+    // All other statuses are considered UNPAID
+    return 'bg-yellow-100 text-yellow-800';
+  };
+  
+  // Helper to format status for display
+  const formatPaymentStatus = (status: string): string => {
+    const normalizedStatus = status.toUpperCase();
+    return (normalizedStatus === 'PAID' || normalizedStatus === 'SUCCESS') ? 'PAID' : 'UNPAID';
+  };
+
+  const getProductImage = (orderItem: OrderItem) => {
+    // Helper to get the first valid image URL
+    const getFirstValidImage = (): string | null => {
+      // Try imageIds first
+      if (Array.isArray(orderItem?.product?.imageIds) && orderItem.product.imageIds.length > 0) {
+        return orderItem.product.imageIds[0];
+      }
+      
+      // Then try imageUrl
+      if (orderItem?.product?.imageUrl) {
+        return orderItem.product.imageUrl;
+      }
+      
+      // Then try images array
+      if (Array.isArray(orderItem?.product?.images) && orderItem.product.images.length > 0) {
+        const firstImage = orderItem.product.images[0];
+        if (firstImage && typeof firstImage === 'object' && 'url' in firstImage) {
+          return firstImage.url;
+        } else if (typeof firstImage === 'string') {
+          return firstImage;
+        }
+      }
+      
+      // Finally try if images is a string
+      if (typeof orderItem?.product?.images === 'string') {
+        return orderItem.product.images;
+      }
+      
+      return null;
+    };
+
+    const imageUrl = getFirstValidImage();
+
+    if (imageUrl) {
+      return (
+        <img 
+          src={imageUrl}
+          alt={orderItem.productName || 'Product'} 
+          className="w-10 h-10 object-cover rounded"
+          onError={(e) => {
+            // Fallback to placeholder if image fails to load
+            (e.target as HTMLImageElement).src = '/placeholder-product.jpg';
+          }}
+        />
+      );
+    }
+
+    return (
+      <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center">
+        <span className="text-xs text-gray-500">No Image</span>
+      </div>
+    );
+  };
 
   return (
     <>
@@ -101,10 +233,10 @@ const TableOrders = () => {
                 <p className="text-gray-700">Address</p>
               </TableCell>
               <TableCell align="center">
-                <p className="text-gray-700">Status</p>
+                <p className="text-gray-700">Delivery Status</p>
               </TableCell>
               <TableCell align="center">
-                <p className="text-gray-700">Paid</p>
+                <p className="text-gray-700">Payment Status</p>
               </TableCell>
               <TableCell align="center">
                 <p className="text-gray-700">Date</p>
@@ -118,7 +250,12 @@ const TableOrders = () => {
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
-                  {order.orderItems[0].productName || ""}
+                  <div className="flex items-center space-x-2">
+                    {getProductImage(order.orderItems[0])}
+                    <span className="line-clamp-1">
+                      {order.orderItems[0]?.productName || 'N/A'}
+                    </span>
+                  </div>
                 </TableCell>
                 <TableCell align="left">{order.phone}</TableCell>
                 <TableCell align="center">{order.address}</TableCell>
@@ -137,18 +274,58 @@ const TableOrders = () => {
                     }}
                     disabled={updateOrderStatus.isPending}
                   >
-                    <MenuItem value="PENDING">Pending</MenuItem>
-                    <MenuItem value="DELIVERED">Delivered</MenuItem>
-                    <MenuItem value="CANCELLED">Cancelled</MenuItem>
-                    <MenuItem value="ON-HOLD">On Hold</MenuItem>
+                    <MenuItem value="PENDING">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor('PENDING')}`}>
+                        Pending
+                      </span>
+                    </MenuItem>
+                    <MenuItem value="DELIVERED">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor('DELIVERED')}`}>
+                        Delivered
+                      </span>
+                    </MenuItem>
+                    <MenuItem value="CANCELLED">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor('CANCELLED')}`}>
+                        Cancelled
+                      </span>
+                    </MenuItem>
+                    <MenuItem value="ON-HOLD">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor('ON-HOLD')}`}>
+                        On Hold
+                      </span>
+                    </MenuItem>
                   </Select>
                 </TableCell>
                 <TableCell align="center">
-                  <span className={`px-2 py-1 text-xs rounded-full ${
-                    order.isPaid ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {order.isPaid ? 'Paid' : 'Unpaid'}
-                  </span>
+                  <Select
+                    value={formatPaymentStatus(order.paymentStatus || (order.isPaid ? 'PAID' : 'UNPAID'))}
+                    onChange={(e) => handlePaymentStatusChange(order.id, e)}
+                    size="small"
+                    sx={{
+                      minWidth: 120,
+                      height: 32,
+                      '& .MuiSelect-select': {
+                        padding: '6px 32px 6px 12px',
+                        fontSize: '0.875rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                      },
+                    }}
+                    disabled={updatePaymentStatus.isPending}
+                    renderValue={(value) => (
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(value as string)}`}>
+                        {value as string}
+                      </span>
+                    )}
+                  >
+                    {['PAID', 'UNPAID'].map((status) => (
+                      <MenuItem key={status} value={status}>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(status)}`}>
+                          {status}
+                        </span>
+                      </MenuItem>
+                    ))}
+                  </Select>
                 </TableCell>
                 <TableCell align="center">
                   {formatDate(order.createdAt)}
@@ -158,7 +335,7 @@ const TableOrders = () => {
           </TableBody>
         </Table>
       </TableContainer>
-      {data && (
+      {data && data.length > 0 && (
         <ReactPaginate
           previousLabel={"Previous"}
           nextLabel={"Next"}
