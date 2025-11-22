@@ -22,6 +22,10 @@ const NavItem = () => {
       label: "Featured",
       href: "/featured",
     },
+    {
+      label: "About Us",
+      href: "/about-us",
+    },
     // Temporarily hide admin route
     // {
     //   label: "Admin",

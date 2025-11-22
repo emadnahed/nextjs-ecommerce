@@ -55,7 +55,8 @@ const Footer = () => {
               <ul className="space-y-3">
                 {[
                   { text: "Home", url: "/" },
-                  { text: "Shop", url: "/shop" }
+                  { text: "Shop", url: "/shop" },
+                  { text: "About Us", url: "/about-us" }
                 ].map((item, index) => (
                   <li key={index}>
                     <Link href={item.url} className="text-gray-600 hover:text-blue-600 transition-colors">
@@ -66,22 +67,7 @@ const Footer = () => {
               </ul>
             </div>
 
-            {/* Customer Service */}
-            <div className="md:col-span-3">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Customer Service</h3>
-              <ul className="space-y-3">
-                {[
-                  { text: "Contact Us", url: "/contact" },
-                  { text: "FAQs", url: "/faq" }
-                ].map((item, index) => (
-                  <li key={index}>
-                    <Link href={item.url} className="text-gray-600 hover:text-blue-600 transition-colors">
-                      {item.text}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+  
 
             {/* Legal */}
             <div className="md:col-span-3">
