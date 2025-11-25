@@ -30,6 +30,15 @@ const nextConfig = {
       },
     ],
   },
+  webpack: (config) => {
+    const path = require("path");
+    // Ensure the '@' alias resolves to the project root at build time
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      "@": path.resolve(__dirname),
+    };
+    return config;
+  },
 };
 
 module.exports = nextConfig;

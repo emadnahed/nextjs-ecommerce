@@ -175,7 +175,7 @@ export function CheckoutForm({ onSuccess, onBack }: CheckoutFormProps) {
 
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/checkout`,
+        `/api/checkout`,
         {
           ...data,
           items,
