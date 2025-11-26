@@ -114,6 +114,7 @@ export async function POST(req: Request) {
     });
 
     // Return appropriate response based on payment method
+    // Include totalAmount in metadata for frontend to use as single source of truth
     if (paymentResponse.paymentUrl) {
       // For redirect-based payments (Cashfree) or UPI QR (SprintNxt)
       return NextResponse.json({
@@ -121,7 +122,7 @@ export async function POST(req: Request) {
         orderId: order.id,
         paymentUrl: paymentResponse.paymentUrl,
         message: paymentResponse.message,
-        metadata: paymentResponse.metadata, // Include QR data for SprintNxt
+        metadata: { ...paymentResponse.metadata, amount: totalAmount },
       });
     } else {
       // For COD and other non-redirect payments
@@ -129,7 +130,7 @@ export async function POST(req: Request) {
         success: true,
         orderId: order.id,
         message: paymentResponse.message || "Order placed successfully",
-        metadata: paymentResponse.metadata,
+        metadata: { ...paymentResponse.metadata, amount: totalAmount },
       });
     }
   } catch (error: any) {

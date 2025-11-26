@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import { PaymentStatus } from "@/lib/payment/types";
 import { SprintNxtPaymentProvider } from "@/lib/payment/providers/sprintnxt-provider";
 
+const isProduction = process.env.NODE_ENV === "production";
+
 /**
  * POST /api/payment/webhook/sprintnxt
  * Webhook handler for SprintNxt UPI payment notifications
@@ -18,20 +20,31 @@ export async function POST(request: NextRequest) {
     // SprintNxt sends encrypted data in 'encdata' field
     const { encdata } = body;
 
-    // If no encrypted data or plain test data, process as plain JSON
-    if (!encdata || encdata === "encrypted-payload-from-sprintnxt") {
+    // In production, require encrypted payload
+    if (!encdata) {
+      if (isProduction) {
+        console.error("SprintNxt webhook missing encrypted payload in production");
+        return NextResponse.json(
+          { error: "Invalid webhook payload" },
+          { status: 400 }
+        );
+      }
+      // Allow plain callbacks only in development/UAT
       return await processPlainCallback(body);
     }
 
-    // Try to decrypt and process the callback
+    // Decrypt and process the callback
     let callbackResult;
     try {
       const sprintNxtProvider = new SprintNxtPaymentProvider();
       callbackResult = await sprintNxtProvider.processCallback(encdata);
     } catch (decryptError: any) {
-      console.error("Decryption failed, trying plain callback:", decryptError.message);
-      // If decryption fails, try processing as plain data
-      return await processPlainCallback(body);
+      console.error("SprintNxt webhook decryption failed:", decryptError.message);
+      // Do NOT fall back to plain callback on decryption failure - this is a security risk
+      return NextResponse.json(
+        { error: "Webhook payload decryption failed" },
+        { status: 400 }
+      );
     }
 
     if (!callbackResult.referenceId) {
@@ -90,9 +103,19 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * Process plain (non-encrypted) callback for testing/UAT
+ * Process plain (non-encrypted) callback for testing/UAT only
+ * This function is disabled in production for security
  */
 async function processPlainCallback(body: any) {
+  // Security guard: Block plain callbacks in production
+  if (isProduction) {
+    console.error("Plain callback processing blocked in production");
+    return NextResponse.json(
+      { error: "This endpoint requires encrypted payload in production" },
+      { status: 403 }
+    );
+  }
+
   const {
     referenceid,
     referenceId,
@@ -180,7 +203,7 @@ async function processPlainCallback(body: any) {
     },
   });
 
-  console.log(`Order ${order.id} updated: ${paymentStatus} (UPI TxnId: ${upiTxnId || "N/A"})`);
+  console.log(`[UAT] Order ${order.id} updated: ${paymentStatus} (UPI TxnId: ${upiTxnId || "N/A"})`);
 
   return NextResponse.json({
     success: true,

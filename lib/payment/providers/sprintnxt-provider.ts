@@ -18,6 +18,9 @@ interface SprintNxtConfig {
   encryptionKey: string;
   encryptionIV: string;
   env: "UAT" | "PROD";
+  // Environment-specific settings
+  payeeVPA: string;
+  bankId: number;
 }
 
 // SprintNxt transaction status codes
@@ -40,18 +43,35 @@ enum SprintNxtApiId {
   STATIC_QR = 20249,
 }
 
+// UAT/Development default values
+const UAT_DEFAULTS = {
+  payeeVPA: "sprintnxt.8080@jiomerchant",
+  bankId: 12,
+  txnNote: "test transaction",
+};
+
 export class SprintNxtPaymentProvider implements IPaymentProvider {
   name = "SprintNxt UPI";
   private config: SprintNxtConfig;
   private baseUrl: string;
 
   constructor() {
+    const env = (process.env.SPRINTNXT_ENV as "UAT" | "PROD") || "UAT";
+    const isProduction = env === "PROD";
+
     this.config = {
       clientId: process.env.SPRINTNXT_CLIENT_ID || "",
       clientSecret: process.env.SPRINTNXT_CLIENT_SECRET || "",
       encryptionKey: process.env.SPRINTNXT_ENCRYPTION_KEY || "",
       encryptionIV: process.env.SPRINTNXT_ENCRYPTION_IV || "",
-      env: (process.env.SPRINTNXT_ENV as "UAT" | "PROD") || "UAT",
+      env,
+      // Use environment variables for production, UAT defaults for development
+      payeeVPA: isProduction
+        ? process.env.SPRINTNXT_PAYEE_VPA || ""
+        : UAT_DEFAULTS.payeeVPA,
+      bankId: isProduction
+        ? parseInt(process.env.SPRINTNXT_BANK_ID || "0", 10)
+        : UAT_DEFAULTS.bankId,
     };
 
     this.baseUrl =
@@ -104,17 +124,17 @@ export class SprintNxtPaymentProvider implements IPaymentProvider {
   }
 
   /**
-   * Generate unique request ID
+   * Generate unique request ID using cryptographically secure random bytes
    */
   private generateRequestId(): string {
-    return `REQ${Date.now()}${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    return `REQ${Date.now()}${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
   }
 
   /**
-   * Generate unique reference ID for transactions
+   * Generate unique reference ID for transactions using cryptographically secure random bytes
    */
   private generateReferenceId(): string {
-    return `TXN${Date.now()}${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+    return `TXN${Date.now()}${crypto.randomBytes(6).toString("hex").toUpperCase()}`;
   }
 
   /**
@@ -215,22 +235,37 @@ export class SprintNxtPaymentProvider implements IPaymentProvider {
       }
 
       const referenceId = this.generateReferenceId();
-      const callbackUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/payment/webhook/sprintnxt`;
+      const isProduction = this.config.env === "PROD";
 
-      // Use referenceId as txnReferance so verifyPayment can use paymentId for both
-      // txnReferance must be <= 35 chars (referenceId is ~24 chars)
-      const payload = {
-        apiId: "20260",
-        referenceid: referenceId,
-        payeeVPA: "sprintnxt.8080@jiomerchant",
-        amount: "10",
-        remarks: `Order ${request.orderId}`,
-        mobile: request.customerPhone.replace(/\D/g, '').slice(-10), // Ensure 10-digit number
-        email: request.customerEmail,
-        bankId: 12,
-        txnNote: 'test transaction',
-        txnReferance: referenceId, // Same as referenceid for easier verification lookup
-      };
+      // Build payload based on environment
+      // UAT: Use test values for testing
+      // PROD: Use actual values from request and config
+      const payload = isProduction
+        ? {
+            apiId: SprintNxtApiId.DYNAMIC_QR.toString(),
+            referenceid: referenceId,
+            payeeVPA: this.config.payeeVPA,
+            amount: request.amount.toString(),
+            remarks: `Order ${request.orderId}`,
+            mobile: request.customerPhone.replace(/\D/g, "").slice(-10),
+            email: request.customerEmail,
+            bankId: this.config.bankId,
+            txnNote: `Payment for Order ${request.orderId}`,
+            txnReferance: referenceId,
+          }
+        : {
+            // UAT/Development payload - keep existing test values
+            apiId: SprintNxtApiId.DYNAMIC_QR.toString(),
+            referenceid: referenceId,
+            payeeVPA: UAT_DEFAULTS.payeeVPA,
+            amount: "10", // Fixed amount for UAT testing
+            remarks: `Order ${request.orderId}`,
+            mobile: request.customerPhone.replace(/\D/g, "").slice(-10),
+            email: request.customerEmail,
+            bankId: UAT_DEFAULTS.bankId,
+            txnNote: UAT_DEFAULTS.txnNote,
+            txnReferance: referenceId,
+          };
 
       const response = await this.makeRequest(payload);
 
@@ -300,9 +335,9 @@ export class SprintNxtPaymentProvider implements IPaymentProvider {
       // SprintNxt requires bankId and txnId for status check
       // Since createPayment uses referenceId as txnReferance, we use the same value here
       const payload = {
-        apiId: "20247", // GET_TXN_STATUS as string
+        apiId: SprintNxtApiId.GET_TXN_STATUS.toString(),
         referenceid: referenceId,
-        bankId: 12, // Same bankId used in createPayment
+        bankId: this.config.bankId,
         txnId: referenceId, // Same as referenceid (txnReferance = referenceId in createPayment)
       };
 
@@ -477,11 +512,18 @@ export class SprintNxtPaymentProvider implements IPaymentProvider {
    * Check if SprintNxt is properly configured
    */
   isAvailable(): boolean {
-    return Boolean(
+    const baseConfigValid = Boolean(
       this.config.clientId &&
         this.config.clientSecret &&
         this.config.encryptionKey &&
         this.config.encryptionIV
     );
+
+    // For production, also require payeeVPA and bankId
+    if (this.config.env === "PROD") {
+      return baseConfigValid && Boolean(this.config.payeeVPA && this.config.bankId);
+    }
+
+    return baseConfigValid;
   }
 }

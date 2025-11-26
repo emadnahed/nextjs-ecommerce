@@ -7,6 +7,12 @@ import { Loader2, CheckCircle2, XCircle, Copy, Smartphone, QrCode } from "lucide
 import axios from "axios";
 import QRCode from "qrcode";
 
+// Payment timing constants
+const PAYMENT_EXPIRY_SECONDS = 300; // 5 minutes total
+const POLL_INTERVAL_MS = 5000; // Poll every 5 seconds
+const INITIAL_POLL_DELAY_MS = 5000; // Wait 5 seconds before first poll
+const MAX_POLLS = Math.ceil(PAYMENT_EXPIRY_SECONDS / (POLL_INTERVAL_MS / 1000));
+
 interface UPIPaymentProps {
   orderId: string;
   paymentId: string;
@@ -36,8 +42,7 @@ export function UPIPayment({
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
   const [copied, setCopied] = useState(false);
   const [pollCount, setPollCount] = useState(0);
-  const [timeRemaining, setTimeRemaining] = useState(300); // 5 minutes in seconds
-  const MAX_POLLS = 60; // 5 minutes with 5-second intervals
+  const [timeRemaining, setTimeRemaining] = useState(PAYMENT_EXPIRY_SECONDS);
 
   // Generate QR code image from UPI string
   useEffect(() => {
@@ -98,10 +103,9 @@ export function UPIPayment({
     if (paymentState !== "pending" && paymentState !== "polling") return;
 
     setPaymentState("polling");
-    let pollInterval: NodeJS.Timeout;
+    let pollInterval: ReturnType<typeof setInterval>;
 
-    // Delay first poll by 5 seconds to give user time to scan QR
-    // and avoid premature status checks
+    // Delay first poll to give user time to scan QR and avoid premature status checks
     const initialDelay = setTimeout(async () => {
       const completed = await checkPaymentStatus();
       if (completed) return;
@@ -121,8 +125,8 @@ export function UPIPayment({
         if (done) {
           clearInterval(pollInterval);
         }
-      }, 5000); // Poll every 5 seconds
-    }, 5000);
+      }, POLL_INTERVAL_MS);
+    }, INITIAL_POLL_DELAY_MS);
 
     return () => {
       clearTimeout(initialDelay);

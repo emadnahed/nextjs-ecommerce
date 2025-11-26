@@ -198,9 +198,13 @@ export function CheckoutForm({ onSuccess, onBack }: CheckoutFormProps) {
       // Handle SprintNxt UPI payment - show QR code
       // Check for either qrString or intentUrl (SprintNxt returns intent_url which can be used for both QR and deep link)
       if (data.paymentMethod === "sprintnxt" && (metadata?.qrString || metadata?.intentUrl)) {
-        const totalAmount = items.reduce((total, item) => {
-          return total + Number(item.totalPrice);
-        }, 0);
+        // Use amount from backend metadata as single source of truth
+        const totalAmount = metadata.amount;
+        if (!totalAmount) {
+          toast.error("Could not retrieve order amount. Please try again.");
+          setLoading(false);
+          return;
+        }
 
         setUpiPaymentData({
           orderId,
