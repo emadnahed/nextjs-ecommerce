@@ -5,6 +5,7 @@
 export enum PaymentMethod {
   COD = "cod",
   CASHFREE = "cashfree",
+  SPRINTNXT = "sprintnxt",
   STRIPE = "stripe", // For future use
 }
 
