@@ -22,6 +22,7 @@ import { Loader2, Check } from "lucide-react";
 import useCart from "@/hooks/use-cart";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { UPIPayment } from "./upi-payment";
 
 const formSchema = z.object({
   customerName: z.string().min(2, "Name must be at least 2 characters"),
@@ -37,7 +38,7 @@ const formSchema = z.object({
     state: z.string(),
     pincode: z.string()
   }).optional(),
-  paymentMethod: z.enum(["cod", "cashfree"], "Please select a payment method"),
+  paymentMethod: z.enum(["cod", "cashfree", "sprintnxt"], "Please select a payment method"),
   notes: z.string().optional(),
 });
 
@@ -48,12 +49,22 @@ interface CheckoutFormProps {
   onBack: () => void;
 }
 
+interface UPIPaymentData {
+  orderId: string;
+  paymentId: string;
+  amount: number;
+  qrString?: string;
+  upiString?: string;
+  intentUrl?: string;
+}
+
 export function CheckoutForm({ onSuccess, onBack }: CheckoutFormProps) {
   const [loading, setLoading] = useState(false);
   const [pincodeLoading, setPincodeLoading] = useState(false);
   const [postOffices, setPostOffices] = useState<any[]>([]);
   const [showPostOfficeList, setShowPostOfficeList] = useState(false);
   const [openInstructionsFor, setOpenInstructionsFor] = useState<string>("");
+  const [upiPaymentData, setUpiPaymentData] = useState<UPIPaymentData | null>(null);
   const { items, removeAllCart } = useCart();
   const router = useRouter();
 
@@ -66,7 +77,7 @@ export function CheckoutForm({ onSuccess, onBack }: CheckoutFormProps) {
       address: "",
       pincode: "",
       postOffice: undefined,
-      paymentMethod: "cashfree",
+      paymentMethod: "sprintnxt",
       notes: "",
     },
   });
@@ -182,9 +193,34 @@ export function CheckoutForm({ onSuccess, onBack }: CheckoutFormProps) {
         }
       );
 
-      if (response.data.paymentUrl) {
-        // For online payments, redirect to payment URL
-        window.location.href = response.data.paymentUrl;
+      const { orderId, paymentUrl, metadata } = response.data;
+
+      // Handle SprintNxt UPI payment - show QR code
+      // Check for either qrString or intentUrl (SprintNxt returns intent_url which can be used for both QR and deep link)
+      if (data.paymentMethod === "sprintnxt" && (metadata?.qrString || metadata?.intentUrl)) {
+        // Use amount from backend metadata as single source of truth
+        const totalAmount = metadata.amount;
+        if (!totalAmount) {
+          toast.error("Could not retrieve order amount. Please try again.");
+          setLoading(false);
+          return;
+        }
+
+        setUpiPaymentData({
+          orderId,
+          paymentId: metadata.referenceId || orderId,
+          amount: totalAmount,
+          qrString: metadata.qrString || metadata.intentUrl, // Use intentUrl for QR if no separate qrString
+          upiString: metadata.upiString || metadata.intentUrl,
+          intentUrl: metadata.intentUrl,
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (paymentUrl) {
+        // For redirect-based payments (Cashfree)
+        window.location.href = paymentUrl;
       } else {
         // For COD
         toast.success("Order placed successfully!");
@@ -201,6 +237,37 @@ export function CheckoutForm({ onSuccess, onBack }: CheckoutFormProps) {
       setLoading(false);
     }
   };
+
+  const handleUPISuccess = () => {
+    removeAllCart();
+    onSuccess();
+    router.push("/order-confirmation");
+  };
+
+  const handleUPIFailure = () => {
+    setUpiPaymentData(null);
+  };
+
+  const handleUPICancel = () => {
+    setUpiPaymentData(null);
+  };
+
+  // Show UPI payment screen if payment data is available
+  if (upiPaymentData) {
+    return (
+      <UPIPayment
+        orderId={upiPaymentData.orderId}
+        paymentId={upiPaymentData.paymentId}
+        amount={upiPaymentData.amount}
+        qrString={upiPaymentData.qrString}
+        upiString={upiPaymentData.upiString}
+        intentUrl={upiPaymentData.intentUrl}
+        onSuccess={handleUPISuccess}
+        onFailure={handleUPIFailure}
+        onCancel={handleUPICancel}
+      />
+    );
+  }
 
   return (
     <Form {...form}>
@@ -400,10 +467,18 @@ export function CheckoutForm({ onSuccess, onBack }: CheckoutFormProps) {
                     >
                       <FormItem className="flex items-center space-x-3 space-y-0">
                         <FormControl>
+                          <RadioGroupItem value="sprintnxt" />
+                        </FormControl>
+                        <FormLabel className="font-normal">
+                          UPI (Pay via QR Code / UPI Apps)
+                        </FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
                           <RadioGroupItem value="cashfree" />
                         </FormControl>
                         <FormLabel className="font-normal">
-                          Pay Online (Credit/Debit Card, UPI, Net Banking)
+                          Pay Online (Credit/Debit Card, Net Banking)
                         </FormLabel>
                       </FormItem>
                       <FormItem className="flex items-center space-x-3 space-y-0">

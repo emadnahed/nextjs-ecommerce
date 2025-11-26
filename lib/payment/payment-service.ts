@@ -12,6 +12,7 @@ import {
 } from "./types";
 import { CODPaymentProvider } from "./providers/cod-provider";
 import { CashfreePaymentProvider } from "./providers/cashfree-provider";
+import { SprintNxtPaymentProvider } from "./providers/sprintnxt-provider";
 
 export class PaymentService {
   private providers: Map<PaymentMethod, IPaymentProvider>;
@@ -32,6 +33,9 @@ export class PaymentService {
 
     // Register Cashfree provider
     this.providers.set(PaymentMethod.CASHFREE, new CashfreePaymentProvider());
+
+    // Register SprintNxt UPI provider
+    this.providers.set(PaymentMethod.SPRINTNXT, new SprintNxtPaymentProvider());
 
     // Add more providers here as needed
     // this.providers.set(PaymentMethod.STRIPE, new StripePaymentProvider());

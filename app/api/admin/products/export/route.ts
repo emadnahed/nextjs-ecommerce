@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { generateCSV, prepareProductForExport } from "@/lib/product-import-export";
 
+// Force dynamic to prevent static generation error with searchParams
+export const dynamic = "force-dynamic";
+
 /**
  * GET /api/admin/products/export?format=csv|json
  * Export all products to CSV or JSON

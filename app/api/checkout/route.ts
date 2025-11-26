@@ -92,8 +92,11 @@ export async function POST(req: Request) {
     );
 
     if (!paymentResponse.success) {
-      // Delete order if payment initialization failed
-      await db.order.delete({ where: { id: order.id } });
+      // Delete order and its items if payment initialization failed
+      await db.$transaction([
+        db.orderItem.deleteMany({ where: { orderId: order.id } }),
+        db.order.delete({ where: { id: order.id } }),
+      ]);
 
       return NextResponse.json(
         { error: paymentResponse.error || "Payment initialization failed" },
@@ -111,13 +114,15 @@ export async function POST(req: Request) {
     });
 
     // Return appropriate response based on payment method
+    // Include totalAmount in metadata for frontend to use as single source of truth
     if (paymentResponse.paymentUrl) {
-      // For redirect-based payments (Cashfree)
+      // For redirect-based payments (Cashfree) or UPI QR (SprintNxt)
       return NextResponse.json({
         success: true,
         orderId: order.id,
         paymentUrl: paymentResponse.paymentUrl,
         message: paymentResponse.message,
+        metadata: { ...paymentResponse.metadata, amount: totalAmount },
       });
     } else {
       // For COD and other non-redirect payments
@@ -125,6 +130,7 @@ export async function POST(req: Request) {
         success: true,
         orderId: order.id,
         message: paymentResponse.message || "Order placed successfully",
+        metadata: { ...paymentResponse.metadata, amount: totalAmount },
       });
     }
   } catch (error: any) {
