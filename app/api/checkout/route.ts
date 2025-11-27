@@ -9,6 +9,7 @@ export async function POST(req: Request) {
   try {
     const { userId } = auth();
 
+    const body = await req.json();
     const {
       items,
       paymentMethod,
@@ -16,10 +17,14 @@ export async function POST(req: Request) {
       customerEmail,
       customerPhone,
       address,
-    } = await req.json();
+    } = body;
+
+    console.log(`\n[Checkout] ===== REQUEST =====`);
+    console.log(`[Checkout] Method: ${paymentMethod}, Items: ${items?.length}, User: ${userId || 'guest'}`);
 
     // Validate required fields
     if (!items || items.length === 0) {
+      console.log(`[Checkout] FAIL: Missing cart items`);
       return NextResponse.json(
         { error: "Cart items are required" },
         { status: 400 }
@@ -27,6 +32,7 @@ export async function POST(req: Request) {
     }
 
     if (!paymentMethod) {
+      console.log(`[Checkout] FAIL: Missing payment method`);
       return NextResponse.json(
         { error: "Payment method is required" },
         { status: 400 }
@@ -34,6 +40,7 @@ export async function POST(req: Request) {
     }
 
     if (!customerName || !customerPhone || !address) {
+      console.log(`[Checkout] FAIL: Missing customer details - name:${!!customerName} phone:${!!customerPhone} addr:${!!address}`);
       return NextResponse.json(
         { error: "Customer details are required" },
         { status: 400 }
@@ -74,7 +81,10 @@ export async function POST(req: Request) {
       },
     });
 
+    console.log(`[Checkout] Order created: ${order.id}, Amount: ${totalAmount}`);
+
     // Initialize payment with selected method
+    console.log(`[Checkout] Calling payment service...`);
     const paymentResponse = await paymentService.createPayment(
       paymentMethod as PaymentMethod,
       {
@@ -91,6 +101,11 @@ export async function POST(req: Request) {
       }
     );
 
+    console.log(`[Checkout] ===== PAYMENT RESPONSE =====`);
+    console.log(`[Checkout] Success: ${paymentResponse.success}, Status: ${paymentResponse.status}`);
+    if (paymentResponse.error) console.log(`[Checkout] Error: ${paymentResponse.error}`);
+    if (paymentResponse.paymentUrl) console.log(`[Checkout] PaymentUrl: ${paymentResponse.paymentUrl?.substring(0, 80)}...`);
+
     if (!paymentResponse.success) {
       // Delete order and its items if payment initialization failed
       await db.$transaction([
@@ -98,6 +113,7 @@ export async function POST(req: Request) {
         db.order.delete({ where: { id: order.id } }),
       ]);
 
+      console.log(`[Checkout] FAIL: Payment init failed, order ${order.id} deleted`);
       return NextResponse.json(
         { error: paymentResponse.error || "Payment initialization failed" },
         { status: 400 }
@@ -115,6 +131,7 @@ export async function POST(req: Request) {
 
     // Return appropriate response based on payment method
     // Include totalAmount in metadata for frontend to use as single source of truth
+    console.log(`[Checkout] SUCCESS: Order ${order.id} ready`);
     if (paymentResponse.paymentUrl) {
       // For redirect-based payments (Cashfree) or UPI QR (SprintNxt)
       return NextResponse.json({

@@ -17,6 +17,7 @@ interface SprintNxtConfig {
   clientSecret: string;
   encryptionKey: string;
   encryptionIV: string;
+  partnerKey: string;
   env: "UAT" | "PROD";
   // Environment-specific settings
   payeeVPA: string;
@@ -64,6 +65,7 @@ export class SprintNxtPaymentProvider implements IPaymentProvider {
       clientSecret: process.env.SPRINTNXT_CLIENT_SECRET || "",
       encryptionKey: process.env.SPRINTNXT_ENCRYPTION_KEY || "",
       encryptionIV: process.env.SPRINTNXT_ENCRYPTION_IV || "",
+      partnerKey: process.env.SPRINTNXT_PARTNER_KEY || "",
       env,
       // Use environment variables for production, UAT defaults for development
       payeeVPA: isProduction
@@ -199,6 +201,7 @@ export class SprintNxtPaymentProvider implements IPaymentProvider {
 
       const payload = {
         apiid: SprintNxtApiId.VALIDATE_VPA,
+        partnerKey: this.config.partnerKey,
         vpaaddress: vpaAddress,
         referenceid: this.generateReferenceId(),
       };
@@ -230,7 +233,30 @@ export class SprintNxtPaymentProvider implements IPaymentProvider {
    */
   async createPayment(request: PaymentRequest): Promise<PaymentResponse> {
     try {
+      console.log("[SprintNxt] ========== CREATE PAYMENT ==========");
+      console.log("[SprintNxt] Environment:", this.config.env);
+      console.log("[SprintNxt] Base URL:", this.baseUrl);
+      console.log("[SprintNxt] Request:", JSON.stringify({
+        orderId: request.orderId,
+        amount: request.amount,
+        currency: request.currency,
+        customerName: request.customerName,
+        customerEmail: request.customerEmail,
+        customerPhone: request.customerPhone,
+      }, null, 2));
+
+      console.log("[SprintNxt] Config:", JSON.stringify({
+        clientId: this.config.clientId,
+        clientSecret: this.config.clientSecret ? `${this.config.clientSecret.substring(0, 8)}...` : "MISSING",
+        encryptionKey: this.config.encryptionKey ? `${this.config.encryptionKey.substring(0, 8)}...` : "MISSING",
+        encryptionIV: this.config.encryptionIV || "MISSING",
+        partnerKey: this.config.partnerKey || "MISSING",
+        payeeVPA: this.config.payeeVPA || "MISSING",
+        bankId: this.config.bankId || "MISSING",
+      }, null, 2));
+
       if (!this.isAvailable()) {
+        console.log("[SprintNxt] isAvailable() returned false - missing config");
         throw new Error("SprintNxt is not configured");
       }
 
@@ -244,6 +270,7 @@ export class SprintNxtPaymentProvider implements IPaymentProvider {
         ? {
             apiId: SprintNxtApiId.DYNAMIC_QR.toString(),
             referenceid: referenceId,
+            partnerKey: this.config.partnerKey,
             payeeVPA: this.config.payeeVPA,
             amount: request.amount.toString(),
             remarks: `Order ${request.orderId}`,
@@ -257,6 +284,7 @@ export class SprintNxtPaymentProvider implements IPaymentProvider {
             // UAT/Development payload - keep existing test values
             apiId: SprintNxtApiId.DYNAMIC_QR.toString(),
             referenceid: referenceId,
+            partnerKey: this.config.partnerKey,
             payeeVPA: UAT_DEFAULTS.payeeVPA,
             amount: "10", // Fixed amount for UAT testing
             remarks: `Order ${request.orderId}`,
@@ -266,6 +294,8 @@ export class SprintNxtPaymentProvider implements IPaymentProvider {
             txnNote: UAT_DEFAULTS.txnNote,
             txnReferance: referenceId,
           };
+
+      console.log("[SprintNxt] Request payload:", JSON.stringify(payload, null, 2));
 
       const response = await this.makeRequest(payload);
 
@@ -328,7 +358,13 @@ export class SprintNxtPaymentProvider implements IPaymentProvider {
     metadata?: Record<string, any>
   ): Promise<PaymentVerification> {
     try {
+      console.log("[SprintNxt] ========== VERIFY PAYMENT ==========");
+      console.log("[SprintNxt] Environment:", this.config.env);
+      console.log("[SprintNxt] Base URL:", this.baseUrl);
+      console.log("[SprintNxt] Reference ID:", referenceId);
+
       if (!this.isAvailable()) {
+        console.log("[SprintNxt] isAvailable() returned false - missing config");
         throw new Error("SprintNxt is not configured");
       }
 
@@ -336,25 +372,35 @@ export class SprintNxtPaymentProvider implements IPaymentProvider {
       // Since createPayment uses referenceId as txnReferance, we use the same value here
       const payload = {
         apiId: SprintNxtApiId.GET_TXN_STATUS.toString(),
+        partnerKey: this.config.partnerKey,
         referenceid: referenceId,
         bankId: this.config.bankId,
         txnId: referenceId, // Same as referenceid (txnReferance = referenceId in createPayment)
       };
 
+      console.log("[SprintNxt] Verify payload:", JSON.stringify(payload, null, 2));
+
       const response = await this.makeRequest(payload);
 
-      // Extract data from details object (new format) or root level (legacy)
-      const details = response.details || response;
+      // Extract data from details object, data object (verify response), or root level
+      const details = response.details || response.data || response;
 
       // Map SprintNxt status to PaymentStatus
       // Handle both numeric and string status values
+      // Verify response uses 'statusvalue' in data object
       let status: PaymentStatus;
-      const rawStatus = details.txnStatus || details.status || response.txnStatus || response.status;
+      const rawStatus = details.statusvalue || details.txnStatus || details.status || response.txnStatus || response.status;
       const txnStatus = typeof rawStatus === 'number' ? rawStatus : parseInt(rawStatus);
+
+      console.log("[SprintNxt] Status extraction:", JSON.stringify({
+        rawStatus,
+        txnStatus,
+        source: details.statusvalue ? "data.statusvalue" : details.txnStatus ? "details.txnStatus" : "other"
+      }));
 
       // If status is undefined/NaN, treat as PENDING (still waiting for payment)
       if (rawStatus === undefined || rawStatus === null || isNaN(txnStatus)) {
-        console.log("[SprintNxt] No status returned, treating as PENDING");
+        console.log("[SprintNxt] No valid status returned, treating as PENDING");
         status = PaymentStatus.PENDING;
       } else {
         switch (txnStatus) {
@@ -379,6 +425,8 @@ export class SprintNxtPaymentProvider implements IPaymentProvider {
             status = PaymentStatus.PENDING;
         }
       }
+
+      console.log("[SprintNxt] Final status:", status, "| Success:", txnStatus === SprintNxtTxnStatus.SUCCESS);
 
       return {
         success: txnStatus === SprintNxtTxnStatus.SUCCESS,
@@ -480,6 +528,7 @@ export class SprintNxtPaymentProvider implements IPaymentProvider {
 
       const payload = {
         apiid: SprintNxtApiId.STATIC_QR,
+        partnerKey: this.config.partnerKey,
         referenceid: this.generateReferenceId(),
         amount: params.amount?.toString() || "",
         remarks: params.remarks || "",
@@ -516,7 +565,8 @@ export class SprintNxtPaymentProvider implements IPaymentProvider {
       this.config.clientId &&
         this.config.clientSecret &&
         this.config.encryptionKey &&
-        this.config.encryptionIV
+        this.config.encryptionIV &&
+        this.config.partnerKey
     );
 
     // For production, also require payeeVPA and bankId
