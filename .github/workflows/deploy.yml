@@ -59,22 +59,33 @@ jobs:
           # Prepare deployment payload
           IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/nextjs-ecommerce:sha-${GITHUB_SHA:0:7}"
 
-          # Deploy to CapRover using API
-          RESPONSE=$(curl -X POST "${{ secrets.CAPROVER_SERVER }}/api/v2/user/apps/webhooks/triggerbuild" \
+          echo "Deploying image: ${IMAGE_NAME}"
+          echo "To app: ${{ secrets.APP_NAME }}"
+
+          # Deploy to CapRover using webhook API
+          RESPONSE=$(curl -X POST \
+            "${{ secrets.CAPROVER_SERVER }}/api/v2/user/apps/webhooks/triggerbuild" \
             -H "Content-Type: application/json" \
             -H "x-namespace: captain" \
             -H "x-captain-app-token: ${{ secrets.APP_TOKEN }}" \
-            -d "{
-              \"schemaVersion\": 2,
-              \"imageName\": \"${IMAGE_NAME}\"
-            }")
+            --data-raw "{\"schemaVersion\":2,\"imageName\":\"${IMAGE_NAME}\"}" \
+            -w "\nHTTP_CODE:%{http_code}" \
+            -s)
 
-          echo "Deployment response: $RESPONSE"
+          echo "Raw response: $RESPONSE"
+
+          # Extract HTTP code
+          HTTP_CODE=$(echo "$RESPONSE" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+          echo "HTTP Status Code: $HTTP_CODE"
 
           # Check if deployment was successful
           if echo "$RESPONSE" | grep -q '"status":100'; then
             echo "✅ Deployment successful!"
             exit 0
+          elif echo "$RESPONSE" | grep -q '"status":1106'; then
+            echo "❌ Authentication failed - APP_TOKEN is invalid or expired"
+            echo "Please regenerate the App Token in CapRover and update the GitHub secret"
+            exit 1
           else
             echo "❌ Deployment failed!"
             echo "$RESPONSE"
