@@ -8,7 +8,7 @@ import { getFeaturedProductsFromDB } from "@/lib/serverDataAccess";
 const HomePage = async () => {
   console.log('[HomePage] Fetching featured products...');
   const featuredProducts = await getFeaturedProductsFromDB();
-  console.log('[HomePage] Featured products fetched:', featuredProducts.length);
+  
 
   return (
     <>
