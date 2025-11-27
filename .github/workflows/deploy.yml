@@ -33,7 +33,7 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository_owner }}/nextjs-ecommerce
           tags: |
-            type=sha,prefix={{branch}}-
+            type=sha
             type=ref,event=branch
             type=raw,value=latest,enable={{is_default_branch}}
 
@@ -55,7 +55,7 @@ jobs:
           server: ${{ secrets.CAPROVER_SERVER }}
           app: ${{ secrets.APP_NAME }}
           token: ${{ secrets.APP_TOKEN }}
-          image: ghcr.io/${{ github.repository_owner }}/nextjs-ecommerce:${{ github.sha }}
+          imageName: ghcr.io/${{ github.repository_owner }}/nextjs-ecommerce:${{ github.sha }}
 
       - name: Deployment summary
         run: |
