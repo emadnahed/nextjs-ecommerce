@@ -50,17 +50,38 @@ jobs:
             NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
 
       - name: Deploy to CapRover
-        uses: caprover/deploy-from-github@v1.1.2
-        with:
-          server: ${{ secrets.CAPROVER_SERVER }}
-          app: ${{ secrets.APP_NAME }}
-          token: ${{ secrets.APP_TOKEN }}
-          imageName: ghcr.io/${{ github.repository_owner }}/nextjs-ecommerce:${{ github.sha }}
+        run: |
+          # Prepare deployment payload
+          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/nextjs-ecommerce:sha-${GITHUB_SHA:0:7}"
+
+          # Deploy to CapRover using API
+          RESPONSE=$(curl -X POST "${{ secrets.CAPROVER_SERVER }}/api/v2/user/apps/webhooks/triggerbuild" \
+            -H "Content-Type: application/json" \
+            -H "x-namespace: captain" \
+            -H "x-captain-app-token: ${{ secrets.APP_TOKEN }}" \
+            -d "{
+              \"schemaVersion\": 2,
+              \"imageName\": \"${IMAGE_NAME}\"
+            }")
+
+          echo "Deployment response: $RESPONSE"
+
+          # Check if deployment was successful
+          if echo "$RESPONSE" | grep -q '"status":100'; then
+            echo "✅ Deployment successful!"
+            exit 0
+          else
+            echo "❌ Deployment failed!"
+            echo "$RESPONSE"
+            exit 1
+          fi
 
       - name: Deployment summary
+        if: success()
         run: |
           echo "### Deployment Complete! 🚀" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Image:** ghcr.io/${{ github.repository_owner }}/nextjs-ecommerce:${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** ghcr.io/${{ github.repository_owner }}/nextjs-ecommerce:sha-${GITHUB_SHA:0:7}" >> $GITHUB_STEP_SUMMARY
           echo "**App:** ${{ secrets.APP_NAME }}" >> $GITHUB_STEP_SUMMARY
-          echo "**SHA:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**SHA:** ${GITHUB_SHA:0:7}" >> $GITHUB_STEP_SUMMARY
+          echo "**Full SHA:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
