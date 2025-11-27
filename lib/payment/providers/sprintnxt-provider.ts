@@ -200,7 +200,7 @@ export class SprintNxtPaymentProvider implements IPaymentProvider {
       }
 
       const payload = {
-        apiid: SprintNxtApiId.VALIDATE_VPA,
+        apiId: SprintNxtApiId.VALIDATE_VPA.toString(),
         partnerKey: this.config.partnerKey,
         vpaaddress: vpaAddress,
         referenceid: this.generateReferenceId(),
@@ -527,7 +527,7 @@ export class SprintNxtPaymentProvider implements IPaymentProvider {
       }
 
       const payload = {
-        apiid: SprintNxtApiId.STATIC_QR,
+        apiId: SprintNxtApiId.STATIC_QR.toString(),
         partnerKey: this.config.partnerKey,
         referenceid: this.generateReferenceId(),
         amount: params.amount?.toString() || "",
