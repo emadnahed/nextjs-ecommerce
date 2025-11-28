@@ -12,6 +12,8 @@ export default authMiddleware({
     "/api/product(.*)",
     "/api/images(.*)",
     "/api/webhook(.*)",
+    "/api/debug-auth",
+    "/api/health",
     "/sign-in(.*)",
     "/sign-up(.*)",
     "/featured(.*)",

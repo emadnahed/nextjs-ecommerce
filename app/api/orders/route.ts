@@ -6,7 +6,10 @@ export async function GET(req: Request) {
   const { userId } = auth();
 
   if (!userId) {
-    return NextResponse.json({ error: "Unauthorized", status: 401 });
+    return NextResponse.json(
+      { error: "Unauthorized. Please sign in to view your orders." },
+      { status: 401 }
+    );
   }
 
   try {
