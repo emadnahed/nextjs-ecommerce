@@ -277,7 +277,7 @@ export class SprintNxtPaymentProvider implements IPaymentProvider {
             mobile: request.customerPhone.replace(/\D/g, "").slice(-10),
             email: request.customerEmail,
             bankId: this.config.bankId,
-            txnNote: `txnNote:${request.orderId.slice(-12)}`,
+            txnNote: `txnNote:${request.orderId.slice(-11)}`,
             txnReferance: referenceId,
             expiryTime: 6,
           }
