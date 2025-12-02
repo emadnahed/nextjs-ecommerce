@@ -279,7 +279,7 @@ export class SprintNxtPaymentProvider implements IPaymentProvider {
             bankId: this.config.bankId,
             txnNote: `txnNote:${request.orderId.slice(-11)}`,
             txnReferance: referenceId,
-            ExpiryTime: 6,
+            ExpiryTime: "6",
           }
         : {
             // UAT/Development payload - keep existing test values
