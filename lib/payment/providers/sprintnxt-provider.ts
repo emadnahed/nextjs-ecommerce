@@ -277,7 +277,7 @@ export class SprintNxtPaymentProvider implements IPaymentProvider {
             mobile: request.customerPhone.replace(/\D/g, "").slice(-10),
             email: request.customerEmail,
             bankId: this.config.bankId,
-            txnNote: `Payment for Order ${request.orderId}`,
+            txnNote: `This is the Payment for Order: ${request.orderId}`,
             txnReferance: referenceId,
           }
         : {
@@ -376,6 +376,7 @@ export class SprintNxtPaymentProvider implements IPaymentProvider {
         referenceid: referenceId,
         bankId: this.config.bankId,
         txnId: referenceId, // Same as referenceid (txnReferance = referenceId in createPayment)
+        expiryTime: 6,
       };
 
       console.log("[SprintNxt] Verify payload:", JSON.stringify(payload, null, 2));
