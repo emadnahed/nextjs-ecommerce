@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 export type SizeProduct = {
   sizeId: string;
   id: string;
+  name: string;
 };
 
 export type createData = {

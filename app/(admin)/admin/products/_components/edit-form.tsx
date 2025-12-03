@@ -145,14 +145,29 @@ const EditForm = ({ data, onSubmit }: EditFormProps) => {
     e.preventDefault();
     setIsLoading(true);
     const formData = new FormData(e.currentTarget);
+
+    // Explicitly set all controlled form values
+    formData.set("name", dataForm.title);
+    formData.set("price", dataForm.price.toString());
+    formData.set("description", dataForm.description);
+    formData.set("type", dataForm.type);
+    formData.set("gender", dataForm.gender);
+    formData.set("material", dataForm.material);
+    formData.set("sku", dataForm.sku || "");
+
+    // Set discount if it exists
+    if (dataForm.discount !== undefined && dataForm.discount !== null && dataForm.discount > 0) {
+      formData.set("discount", dataForm.discount.toString());
+    }
+
     formData.append("isFeatured", checkbox.toString());
-    
+
     // Ensure we're sending the correct format for productSizes
     const sizesToSend = dataForm.productSizes?.map(size => ({
       sizeId: size.sizeId,
       name: size.name
     })) || [];
-    
+
     formData.append("productSizes", JSON.stringify(sizesToSend));
     formData.append("colors", JSON.stringify(dataForm.colors || []));
     
