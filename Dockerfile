@@ -5,21 +5,21 @@ FROM node:18-alpine AS base
 # Install OpenSSL and other dependencies needed for Prisma
 RUN apk add --no-cache libc6-compat openssl
 
-# Enable Corepack for Yarn
-RUN corepack enable && corepack prepare yarn@4.9.4 --activate
-
 # Install dependencies only when needed
 FROM base AS deps
 WORKDIR /app
 
-# Copy package files and Yarn configuration
-COPY package.json yarn.lock .yarnrc.yml ./
+# Copy package files
+COPY package.json package-lock.json ./
 
 # Copy Prisma schema for postinstall script
 COPY prisma ./prisma
 
-# Install dependencies using Yarn (with immutable for reproducible builds)
-RUN yarn install --immutable --inline-builds
+# Install dependencies using npm
+RUN npm ci --legacy-peer-deps --omit=dev --ignore-scripts
+
+# Generate Prisma client separately to avoid postinstall issues
+RUN npx prisma generate
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -28,14 +28,17 @@ WORKDIR /app
 # Copy node_modules from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 
-# Copy package.json and Yarn config for build commands
-COPY package.json yarn.lock .yarnrc.yml ./
+# Copy package.json for build commands
+COPY package.json ./
 
 # Copy application source
 COPY . .
 
-# Generate Prisma Client (already done in postinstall, but ensure it's there)
-RUN yarn prisma generate
+# Install dev dependencies needed for build
+RUN npm install --legacy-peer-deps --include=dev --ignore-scripts
+
+# Generate Prisma Client (ensure it's available for build)
+RUN npx prisma generate
 
 # Build Next.js application
 # Accept build arguments for Next.js public environment variables
@@ -55,7 +58,7 @@ ENV NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=$NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL
 ENV NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=$NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN yarn build
+RUN npm run build
 
 # Production image, copy all the files and run next
 FROM base AS runner
