@@ -6,12 +6,14 @@ export default function Page({ searchParams }: { searchParams: { redirect_url?: 
   console.log('[SignIn Page] Rendering with params:', {
     redirectUrl,
     searchParams,
+    willUseForceRedirectUrl: true,
   });
 
   return (
     <div className="flex justify-center p-4 min-h-[90vh] items-center">
       <SignIn
-        redirectUrl={redirectUrl}
+        forceRedirectUrl={redirectUrl}
+        fallbackRedirectUrl={redirectUrl}
         appearance={{
           variables: {
             colorBackground: "#19191A",
