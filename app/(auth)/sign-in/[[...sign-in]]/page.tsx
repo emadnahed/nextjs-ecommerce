@@ -3,17 +3,22 @@ import { SignIn } from "@clerk/nextjs";
 export default function Page({ searchParams }: { searchParams: { redirect_url?: string } }) {
   const redirectUrl = searchParams.redirect_url || "/";
 
+  // After sign-in, go to our custom callback page which will handle the final redirect
+  const afterSignInUrl = redirectUrl !== "/"
+    ? `/sso-callback?redirect_url=${encodeURIComponent(redirectUrl)}`
+    : "/";
+
   console.log('[SignIn Page] Rendering with params:', {
     redirectUrl,
+    afterSignInUrl,
     searchParams,
-    willUseForceRedirectUrl: true,
   });
 
   return (
     <div className="flex justify-center p-4 min-h-[90vh] items-center">
       <SignIn
-        forceRedirectUrl={redirectUrl}
-        fallbackRedirectUrl={redirectUrl}
+        forceRedirectUrl={afterSignInUrl}
+        fallbackRedirectUrl={afterSignInUrl}
         appearance={{
           variables: {
             colorBackground: "#19191A",

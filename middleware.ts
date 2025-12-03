@@ -17,9 +17,12 @@ export default authMiddleware({
     "/api/health",
     "/sign-in(.*)",
     "/sign-up(.*)",
+    "/sso-callback(.*)",
     "/featured(.*)",
     "/cart(.*)",
   ],
+  // Store the original URL to redirect back after sign-in
+  signInUrl: "/sign-in",
   afterAuth(auth, req) {
     const pathname = req.nextUrl.pathname;
 
