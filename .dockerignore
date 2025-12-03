@@ -4,6 +4,11 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Keep Yarn configuration files (don't ignore)
+# .yarn
+# .yarnrc.yml
+# yarn.lock
+
 # Build output
 .next
 out
