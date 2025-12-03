@@ -1,9 +1,10 @@
 import { SignIn } from "@clerk/nextjs";
 
-export default function Page() {
+export default function Page({ searchParams }: { searchParams: { redirect_url?: string } }) {
   return (
     <div className="flex justify-center p-4 min-h-[90vh] items-center">
       <SignIn
+        redirectUrl={searchParams.redirect_url || "/"}
         appearance={{
           variables: {
             colorBackground: "#19191A",

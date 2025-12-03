@@ -28,8 +28,13 @@ export default authMiddleware({
 
     // If user is not authenticated and trying to access admin, redirect to sign-in
     if (!auth.userId && req.nextUrl.pathname.startsWith('/admin')) {
-      const signInUrl = new URL('/sign-in', req.url);
-      signInUrl.searchParams.set('redirect_url', req.url);
+      // Get the proper origin from headers or fallback to production domain
+      const host = req.headers.get('host') || 'www.zeyrey.online';
+      const protocol = req.headers.get('x-forwarded-proto') || 'https';
+      const origin = `${protocol}://${host}`;
+
+      const signInUrl = new URL('/sign-in', origin);
+      signInUrl.searchParams.set('redirect_url', `${origin}${req.nextUrl.pathname}`);
       return NextResponse.redirect(signInUrl);
     }
   },
