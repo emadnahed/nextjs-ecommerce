@@ -1,4 +1,4 @@
-import { Product } from "@/types";
+import { Product, Category } from "@/types";
 
 // Automatically detect the correct API URL based on environment
 const getApiUrl = () => {
@@ -23,35 +23,6 @@ const getApiUrl = () => {
 
 const API_URL = getApiUrl();
 
-/**
- * Converts imageIds to imageURLs for display
- * Supports both:
- * - Direct URLs (from DigitalOcean Spaces or external sources)
- * - Legacy IDs (converted to /api/images/{id} format)
- */
-function enrichProductWithImageURLs(product: Product): Product {
-  if (product.imageIds && Array.isArray(product.imageIds)) {
-    product.imageURLs = product.imageIds.map(id => {
-      // If it's already a full URL, use it as-is
-      if (id.startsWith('http://') || id.startsWith('https://')) {
-        return id;
-      }
-      // Otherwise, treat it as a legacy ID
-      return `${API_URL}/api/images/${id}`;
-    });
-  } else {
-    product.imageURLs = [];
-  }
-  return product;
-}
-
-/**
- * Enriches multiple products with imageURLs
- */
-function enrichProductsWithImageURLs(products: Product[]): Product[] {
-  return products.map(enrichProductWithImageURLs);
-}
-
 export const getProduct = async (productId: string): Promise<Product> => {
   try {
     const response = await fetch(`${API_URL}/api/product/${productId}`, {
@@ -59,35 +30,16 @@ export const getProduct = async (productId: string): Promise<Product> => {
     });
     if (!response.ok) throw new Error('Product not found');
     const product = await response.json();
-    return enrichProductWithImageURLs(product);
+    return product;
   } catch (error) {
     console.error('Error fetching product:', error);
     throw error;
   }
 };
 
-export const getProductsByType = async (type: string): Promise<Product[]> => {
-  try {
-    const response = await fetch(`${API_URL}/api/product/type/${type}`, {
-      cache: 'no-store'
-    });
-    if (!response.ok) throw new Error('Products not found');
-    const products = await response.json();
-    return enrichProductsWithImageURLs(products);
-  } catch (error) {
-    console.error('Error fetching products by type:', error);
-    return [];
-  }
-};
-
 export const getAllProducts = async (): Promise<Product[]> => {
   try {
     console.log('[getAllProducts] API_URL:', API_URL);
-    console.log('[getAllProducts] Environment:', {
-      isServer: typeof window === 'undefined',
-      VERCEL_URL: process.env.VERCEL_URL,
-      NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-    });
 
     const response = await fetch(`${API_URL}/api/product`, {
       cache: 'no-store'
@@ -106,78 +58,125 @@ export const getAllProducts = async (): Promise<Product[]> => {
     const data = await response.json();
     console.log('[getAllProducts] Fetched products count:', Array.isArray(data) ? data.length : 'not an array');
 
-    // Check if data is an array
     if (!Array.isArray(data)) {
       console.error('[getAllProducts] API did not return an array:', data);
       return [];
     }
 
-    const enrichedData = enrichProductsWithImageURLs(data);
-    console.log('[getAllProducts] Enriched products count:', enrichedData.length);
-    return enrichedData;
+    return data;
   } catch (error) {
     console.error('[getAllProducts] Error fetching all products:', error);
-    if (error instanceof Error) {
-      console.error('[getAllProducts] Error message:', error.message);
-      console.error('[getAllProducts] Error stack:', error.stack);
-    }
     return [];
   }
 };
 
-export const getFeaturedProducts = async (): Promise<Product[]> => {
+export const getProductsByCategory = async (category: string): Promise<Product[]> => {
+  try {
+    const response = await fetch(`${API_URL}/api/product?category=${encodeURIComponent(category)}`, {
+      cache: 'no-store'
+    });
+    if (!response.ok) throw new Error('Products not found');
+    const products = await response.json();
+    return products;
+  } catch (error) {
+    console.error('Error fetching products by category:', error);
+    return [];
+  }
+};
+
+export const getProductsByTopLevelCategory = async (topLevelCategory: string): Promise<Product[]> => {
+  try {
+    const response = await fetch(`${API_URL}/api/product?topLevelCategory=${encodeURIComponent(topLevelCategory)}`, {
+      cache: 'no-store'
+    });
+    if (!response.ok) throw new Error('Products not found');
+    const products = await response.json();
+    return products;
+  } catch (error) {
+    console.error('Error fetching products by top-level category:', error);
+    return [];
+  }
+};
+
+// Get top products by rating and review count
+export const getFeaturedProducts = async (limit: number = 20): Promise<Product[]> => {
   try {
     const products = await getAllProducts();
-    return products.filter(product => product.featured);
+    // Sort by rating (desc) and review count (desc), then take top N
+    return products
+      .sort((a, b) => {
+        const ratingA = parseFloat(a.rating) || 0;
+        const ratingB = parseFloat(b.rating) || 0;
+        if (ratingB !== ratingA) {
+          return ratingB - ratingA;
+        }
+        return b.reviewCount - a.reviewCount;
+      })
+      .slice(0, limit);
   } catch (error) {
     console.error('Error fetching featured products:', error);
     return [];
   }
 };
 
-// Get unique product types from all products
-export const getProductTypes = async (): Promise<string[]> => {
+// Get all categories
+export const getAllCategories = async (): Promise<Category[]> => {
   try {
-    const products = await getAllProducts();
-    const types = Array.from(new Set(products.map(p => p.type)));
-    return types.sort();
+    const response = await fetch(`${API_URL}/api/categories`, {
+      cache: 'no-store'
+    });
+    if (!response.ok) throw new Error('Categories not found');
+    const categories = await response.json();
+    return categories;
   } catch (error) {
-    console.error('Error fetching product types:', error);
+    console.error('Error fetching categories:', error);
     return [];
   }
 };
 
-// Get unique genders from all products
-export const getGenders = async (): Promise<string[]> => {
+// Get categories by top-level category
+export const getCategoriesByTopLevel = async (topLevelCategory: string): Promise<Category[]> => {
   try {
-    const products = await getAllProducts();
-    const genders = Array.from(new Set(products.map(p => p.gender)));
-    return genders.sort();
+    const response = await fetch(`${API_URL}/api/categories?topLevelCategory=${encodeURIComponent(topLevelCategory)}`, {
+      cache: 'no-store'
+    });
+    if (!response.ok) throw new Error('Categories not found');
+    const categories = await response.json();
+    return categories;
   } catch (error) {
-    console.error('Error fetching genders:', error);
+    console.error('Error fetching categories by top-level:', error);
     return [];
   }
 };
 
-// Get unique colors from all products
-export const getColors = async (): Promise<string[]> => {
+// Get unique top-level categories from all products
+export const getTopLevelCategories = async (): Promise<string[]> => {
   try {
     const products = await getAllProducts();
-    // Flatten the colors array since each product can have multiple colors
-    const allColors = products.flatMap(p => p.colors || []);
-    const uniqueColors = Array.from(new Set(allColors));
-    return uniqueColors.sort();
+    const topLevels = Array.from(new Set(products.map(p => p.topLevelCategory)));
+    return topLevels.sort();
   } catch (error) {
-    console.error('Error fetching colors:', error);
+    console.error('Error fetching top-level categories:', error);
     return [];
   }
 };
 
-// Get products by category (type)
+// Get unique categories from all products
+export const getProductCategories = async (): Promise<string[]> => {
+  try {
+    const products = await getAllProducts();
+    const categories = Array.from(new Set(products.map(p => p.category)));
+    return categories.sort();
+  } catch (error) {
+    console.error('Error fetching product categories:', error);
+    return [];
+  }
+};
+
+// Get products by category
 export const getCategoryProducts = async (category: string): Promise<Product[]> => {
   try {
-    const products = await getAllProducts();
-    return products.filter(p => p.type.toLowerCase() === category.toLowerCase());
+    return await getProductsByCategory(category);
   } catch (error) {
     console.error('Error fetching category products:', error);
     return [];

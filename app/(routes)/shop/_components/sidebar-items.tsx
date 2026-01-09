@@ -4,19 +4,17 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { usePathname } from "next/navigation";
 
 type SidebarItemsProps = {
-  types: string[];
-  genders: string[];
-  colors: string[];
+  categories: string[];
+  topLevelCategories: string[];
 };
 
-const SidebarItems = ({ types, genders, colors }: SidebarItemsProps) => {
+const SidebarItems = ({ categories, topLevelCategories }: SidebarItemsProps) => {
   const pathName = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const currentType = searchParams.get("type");
-  const currentGender = searchParams.get("gender");
-  const currentColor = searchParams.get("color");
+  const currentCategory = searchParams.get("category");
+  const currentTopLevel = searchParams.get("topLevelCategory");
 
   const createQueryString = (name: string, value: string | null) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -37,79 +35,53 @@ const SidebarItems = ({ types, genders, colors }: SidebarItemsProps) => {
 
   return (
     <div className="space-y-4">
-      {/* Product Type Filter */}
+      {/* Top Level Category Filter */}
       <div>
-        <p className="font-semibold mb-2">Product Type</p>
-        <div className="flex flex-col gap-1">
+        <p className="font-semibold mb-2">Department</p>
+        <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
           <button
-            onClick={() => handleFilterClick('type', null)}
+            onClick={() => handleFilterClick('topLevelCategory', null)}
             className={`text-left hover:underline underline-offset-4 tracking-wide text-sm ${
-              !currentType ? "underline font-medium" : ""
+              !currentTopLevel ? "underline font-medium" : ""
             }`}
           >
             All
           </button>
-          {types.map((type) => (
+          {topLevelCategories.slice(0, 15).map((topLevel) => (
             <button
-              key={type}
-              onClick={() => handleFilterClick('type', type)}
+              key={topLevel}
+              onClick={() => handleFilterClick('topLevelCategory', topLevel)}
               className={`text-left hover:underline underline-offset-4 tracking-wide text-sm ${
-                currentType === type ? "underline font-medium" : ""
+                currentTopLevel === topLevel ? "underline font-medium" : ""
               }`}
             >
-              {type}
+              {topLevel}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Gender Filter */}
+      {/* Category Filter */}
       <div>
-        <p className="font-semibold mb-2">Gender</p>
-        <div className="flex flex-col gap-1">
+        <p className="font-semibold mb-2">Category</p>
+        <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
           <button
-            onClick={() => handleFilterClick('gender', null)}
+            onClick={() => handleFilterClick('category', null)}
             className={`text-left hover:underline underline-offset-4 tracking-wide text-sm ${
-              !currentGender ? "underline font-medium" : ""
+              !currentCategory ? "underline font-medium" : ""
             }`}
           >
             All
           </button>
-          {genders.map((gender) => (
+          {categories.slice(0, 20).map((category) => (
             <button
-              key={gender}
-              onClick={() => handleFilterClick('gender', gender)}
+              key={category}
+              onClick={() => handleFilterClick('category', category)}
               className={`text-left hover:underline underline-offset-4 tracking-wide text-sm ${
-                currentGender === gender ? "underline font-medium" : ""
+                currentCategory === category ? "underline font-medium" : ""
               }`}
             >
-              {gender}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Color Filter */}
-      <div>
-        <p className="font-semibold mb-2">Color</p>
-        <div className="flex flex-col gap-1">
-          <button
-            onClick={() => handleFilterClick('color', null)}
-            className={`text-left hover:underline underline-offset-4 tracking-wide text-sm ${
-              !currentColor ? "underline font-medium" : ""
-            }`}
-          >
-            All
-          </button>
-          {colors.map((color) => (
-            <button
-              key={color}
-              onClick={() => handleFilterClick('color', color)}
-              className={`text-left hover:underline underline-offset-4 tracking-wide text-sm ${
-                currentColor === color ? "underline font-medium" : ""
-              }`}
-            >
-              {color}
+              {category}
             </button>
           ))}
         </div>

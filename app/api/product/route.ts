@@ -1,99 +1,64 @@
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs";
-import { uploadFile } from "@/lib/file-upload";
-import { enrichProductsWithImageURLs } from "@/lib/imageUrlHelper";
 
 export async function POST(req: Request) {
   const { userId } = auth();
 
   if (!userId) {
-    return NextResponse.json({ error: "Unauthorized", status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const formData = await req.formData();
-    const files = formData.getAll("files");
-
-    const fileNames: string[] = [];
-    if (!files || files.length === 0) {
-      return NextResponse.json({ error: "File is required" }, { status: 400 });
-    }
-
-    // Upload files to DigitalOcean Spaces and get image URLs
-    for (const file of Array.from(files)) {
-      if (file instanceof File) {
-        const buffer = Buffer.from(await file.arrayBuffer());
-        const imageUrl = await uploadFile(buffer, file.name);
-        fileNames.push(imageUrl);
-      }
-    }
-
-    const requestData = formData.get("requestData") as string;
-    const productInfo = JSON.parse(requestData);
+    const body = await req.json();
 
     const {
+      productId,
       title,
-      description,
+      category,
+      categoryId,
+      parentCategory,
+      topLevelCategory,
       price,
-      featured,
-      type,
-      gender,
-      colors,
-      material,
-      sizes,
-      discount,
-      sku,
-    } = productInfo;
+      rating,
+      reviewCount,
+      image,
+      link,
+    } = body;
 
     // Validate required fields
     if (
+      !productId ||
       !title ||
-      title.length < 4 ||
-      !description ||
-      description.length < 4 ||
-      !price ||
-      !fileNames.length ||
-      !type ||
-      !gender ||
-      !colors ||
-      !Array.isArray(colors) ||
-      colors.length === 0
+      !category ||
+      !categoryId ||
+      !parentCategory ||
+      !topLevelCategory ||
+      price === undefined ||
+      !rating ||
+      !image ||
+      !link
     ) {
       return NextResponse.json(
-        { error: "Missing required fields." },
+        { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    // Calculate sale price if discount exists
-    let salePrice: number | null = null;
-    if (discount && discount > 0) {
-      const discountAmount = (discount / 100) * +price;
-      salePrice = +price - discountAmount;
-    }
-
-    const product = await db?.product.create({
+    const product = await db.product.create({
       data: {
+        productId,
         title,
-        description,
+        category,
+        categoryId,
+        parentCategory,
+        topLevelCategory,
         price: +price,
-        featured: featured || false,
-        imageIds: fileNames,
-        type,
-        gender,
-        colors: Array.isArray(colors) ? colors : [colors],
-        material: material || "Cotton",
-        discount: discount ? +discount : null,
-        salePrice,
-        inStock: true,
-        sku: sku || null,
-        productSizes: {
-          create: sizes.map((size: any) => ({
-            size: { connect: { id: size.id } },
-            name: size.name,
-          })),
-        },
+        rating,
+        reviewCount: reviewCount || 0,
+        image,
+        link,
+        scrapedAt: new Date().toISOString(),
       },
     });
 
@@ -109,9 +74,28 @@ export async function POST(req: Request) {
 
 export async function GET(req: Request) {
   try {
-    const products = await db.product.findMany();
-    const enrichedProducts = enrichProductsWithImageURLs(products);
-    return NextResponse.json(enrichedProducts);
+    const url = new URL(req.url);
+    const category = url.searchParams.get('category');
+    const topLevelCategory = url.searchParams.get('topLevelCategory');
+
+    let products;
+    if (category) {
+      products = await db.product.findMany({
+        where: { category },
+        orderBy: { price: 'desc' }
+      });
+    } else if (topLevelCategory) {
+      products = await db.product.findMany({
+        where: { topLevelCategory },
+        orderBy: { price: 'desc' }
+      });
+    } else {
+      products = await db.product.findMany({
+        orderBy: { price: 'desc' }
+      });
+    }
+
+    return NextResponse.json(products);
   } catch (error) {
     console.error("Error getting products:", error);
     return NextResponse.json(

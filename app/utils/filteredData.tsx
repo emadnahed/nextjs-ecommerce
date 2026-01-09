@@ -3,65 +3,63 @@ import { Product } from "@/types";
 const filteredData = (params: any, data: Product[]) => {
   let filtered = [...data];
 
-  const getPriceForSorting = (product: Product) => {
-    return product.salePrice && product.salePrice > 0
-      ? product.salePrice
-      : product.price;
-  };
-
-  // Filter by product type
-  if (params.type) {
+  // Filter by category
+  if (params.category) {
     filtered = filtered.filter((product: Product) =>
-      product.type.toLowerCase() === params.type.toLowerCase()
+      product.category.toLowerCase() === params.category.toLowerCase()
     );
   }
 
-  // Filter by gender
-  if (params.gender) {
+  // Filter by top-level category
+  if (params.topLevelCategory) {
     filtered = filtered.filter((product: Product) =>
-      product.gender.toLowerCase() === params.gender.toLowerCase()
+      product.topLevelCategory.toLowerCase() === params.topLevelCategory.toLowerCase()
     );
   }
 
-  // Filter by color (check if colors array includes the color)
-  if (params.color) {
+  // Filter by parent category
+  if (params.parentCategory) {
     filtered = filtered.filter((product: Product) =>
-      product.colors?.some(c => c.toLowerCase() === params.color.toLowerCase())
+      product.parentCategory.toLowerCase() === params.parentCategory.toLowerCase()
     );
   }
 
-  // Filter by price
+  // Filter by price (max price)
   if (params.price) {
-    filtered = filtered.filter((product: Product) => {
-      if (product.salePrice && product.salePrice > 0) {
-        return +product.salePrice <= +params.price;
-      } else {
-        return +product.price <= +params.price;
-      }
-    });
+    filtered = filtered.filter((product: Product) =>
+      product.price <= +params.price
+    );
   }
 
-  // Search query
-  if (params.q) {
+  // Filter by min price
+  if (params.minPrice) {
     filtered = filtered.filter((product: Product) =>
-      product.title.toLowerCase().includes(params.q.toLowerCase())
+      product.price >= +params.minPrice
+    );
+  }
+
+  // Search query (search in title and category)
+  if (params.q) {
+    const query = params.q.toLowerCase();
+    filtered = filtered.filter((product: Product) =>
+      product.title.toLowerCase().includes(query) ||
+      product.category.toLowerCase().includes(query)
     );
   }
 
   // Sort
   if (params.sort === "price-low-to-high") {
-    filtered.sort(
-      (a: any, b: any) => +getPriceForSorting(a) - +getPriceForSorting(b)
-    );
+    filtered.sort((a, b) => a.price - b.price);
   } else if (params.sort === "price-high-to-low") {
-    filtered.sort(
-      (a: any, b: any) => +getPriceForSorting(b) - +getPriceForSorting(a)
-    );
-  } else if (params.sort === "latest-arrivals") {
-    filtered.sort(
-      (a: any, b: any) =>
-        new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
-    );
+    filtered.sort((a, b) => b.price - a.price);
+  } else if (params.sort === "rating-high-to-low") {
+    filtered.sort((a, b) => {
+      const ratingA = parseFloat(a.rating) || 0;
+      const ratingB = parseFloat(b.rating) || 0;
+      return ratingB - ratingA;
+    });
+  } else if (params.sort === "most-reviewed") {
+    filtered.sort((a, b) => b.reviewCount - a.reviewCount);
   }
 
   return filtered;

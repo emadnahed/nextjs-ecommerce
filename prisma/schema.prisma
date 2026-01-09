@@ -7,100 +7,112 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Category model - maps to "categories" collection in MongoDB
+model Category {
+  id               String @id @default(auto()) @map("_id") @db.ObjectId
+  categoryId       Int    @unique(map: "id_1") @map("id")
+  name             String
+  parentCategory   String
+  serialNumber     String
+  subcategories    Json?
+  topLevelCategory String
+  url              String
+
+  @@map("categories")
+}
+
+// Product model - maps to "products" collection in MongoDB
 model Product {
-  id           String        @id @default(cuid()) @map("_id")
-  title        String
-  description  String
-  imageIds     String[]      // Array of image URLs from DigitalOcean Spaces
-
-  // Clothing specific fields
-  type         String        // "T-Shirt", "Hoodie", "Shirt", "Blouse", "Dashiki", "Jacket", etc.
-  gender       String        // "Men", "Women", "Unisex"
-  colors       String[]      // Multiple color variants available
-  material     String        @default("Cotton") // "Cotton", "Cotton Blend", "Linen", etc.
-
-  // Pricing
-  price        Float         // Regular price
-  salePrice    Float?        // Sale price (if on sale)
-  discount     Float?        // Discount percentage
-
-  // Inventory & Features
-  featured     Boolean       @default(false)
-  inStock      Boolean       @default(true)
-  sku          String?       // Stock Keeping Unit (optional)
+  id               String      @id @default(auto()) @map("_id") @db.ObjectId
+  category         String
+  categoryId       Int
+  image            String
+  link             String
+  parentCategory   String
+  price            Int
+  productId        String      @unique(map: "productId_1")
+  rating           String
+  reviewCount      Int
+  scrapedAt        String
+  title            String
+  topLevelCategory String
 
   // Relations
-  productSizes ProductSize[]
-  orderItems   OrderItem[]
+  orderItems       OrderItem[]
 
-  createdAt DateTime    @default(now()) @map("created_at")
-  updatedAt DateTime    @default(now()) @updatedAt @map("updated_at")
+  @@index([category], map: "category_1")
+  @@index([topLevelCategory], map: "topLevelCategory_1")
+  @@index([price], map: "price_1")
+  @@index([rating], map: "rating_1")
+  @@map("products")
 }
 
-model Size {
-  id            String         @id @default(cuid()) @map("_id")
-  name          String         @unique
-  productSizes  ProductSize[]
+// Order model for managing customer orders
+model Order {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  orderItems    OrderItem[]
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+  // Payment Information
+  isPaid        Boolean     @default(false)
+  paymentMethod String      @default("cod")
+  paymentId     String?
+  paymentStatus String      @default("pending")
+
+  // Customer Information
+  userId        String?
+  customerName  String      @default("")
+  customerEmail String      @default("")
+  phone         String      @default("")
+  address       String      @default("")
+
+  // Order totals
+  totalAmount   Int         @default(0)
+  orderStatus   String      @default("PENDING")
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([userId])
+  @@map("orders")
 }
 
-model ProductSize {
-  id        String   @id @default(cuid()) @map("_id")
-  productId String
-  sizeId    String
-  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
-  size      Size     @relation(fields: [sizeId], references: [id], onDelete: Cascade)
-  name      String?  @map("name")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
-
-  @@index([productId])
-  @@index([sizeId])
-}
-
+// OrderItem model for individual items in an order
 model OrderItem {
-  id          String  @id @default(cuid()) @map("_id")
-  orderId     String
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  orderId     String  @db.ObjectId
   order       Order   @relation(fields: [orderId], references: [id])
-  productId   String
+  productId   String  @db.ObjectId
   product     Product @relation(fields: [productId], references: [id])
   productName String
   quantity    Int     @default(1)
-  size        String? // Size selected for this item
-  price       Float   // Price at time of purchase
+  price       Int
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([orderId])
   @@index([productId])
+  @@map("orderitems")
 }
 
-model Order {
-  id              String      @id @default(cuid()) @map("_id")
-  orderItems      OrderItem[]
+// ProductDetails model - maps to "productDetails" collection in MongoDB
+// Contains detailed product information including reviews, images, shipping info
+model ProductDetails {
+  id               String  @id @default(auto()) @map("_id") @db.ObjectId
+  productId        String  @unique
+  catalogId        String?
+  category         String?
+  categoryId       Int?
+  data             Json?   // Contains: images, description, reviews, shipping, suppliers, etc.
+  image            String?
+  link             String?
+  parentCategory   String?
+  price            Int?
+  rating           String?
+  reviewCount      Int?
+  scrapedAt        String?
+  title            String?
+  topLevelCategory String?
 
-  // Payment Information
-  isPaid          Boolean     @default(false)
-  paymentMethod   String      @default("cod") // "cod", "cashfree", "stripe"
-  paymentId       String?     // Payment gateway transaction ID
-  paymentStatus   String      @default("pending") // "pending", "success", "failed", "cancelled"
-
-  // Customer Information
-  userId          String?     // Clerk user ID (optional for guest checkout)
-  customerName    String      @default("")
-  customerEmail   String      @default("")
-  phone           String      @default("")
-  address         String      @default("")
-
-  // Order totals
-  totalAmount     Float       @default(0)
-  orderStatus     String      @default("PENDING") // Order status: PENDING, DELIVERED, CANCELLED, ON-HOLD
-
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-
-  @@index([userId])
+  @@map("productDetails")
 }

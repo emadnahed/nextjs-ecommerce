@@ -1,9 +1,6 @@
 import { db } from "@/lib/db";
-import { s3Client } from "@/lib/s3";
-import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { auth } from "@clerk/nextjs";
 import { NextResponse } from "next/server";
-import { enrichProductWithImageURLs } from "@/lib/imageUrlHelper";
 
 export async function DELETE(
   req: Request,
@@ -11,73 +8,37 @@ export async function DELETE(
 ) {
   const { id } = params;
   const { userId } = auth();
+
   try {
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized", status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const productSizes = await db.productSize.findMany({
-      where: {
-        productId: id,
-      },
-    });
 
+    // Delete associated order items first
     const orderItems = await db.orderItem.findMany({
-      where: {
-        productId: id,
-      },
+      where: { productId: id },
     });
 
     await Promise.all(
       orderItems.map(async (orderItem) => {
         await db.orderItem.delete({
-          where: {
-            id: orderItem.id,
-          },
+          where: { id: orderItem.id },
         });
       })
     );
 
-    await Promise.all(
-      productSizes.map(async (productSize) => {
-        await db.productSize.delete({
-          where: {
-            id: productSize.id,
-          },
-        });
-      })
-    );
-
-    const product = await db.product.findUnique({
-      where: {
-        id,
-      },
+    // Delete the product
+    await db.product.delete({
+      where: { id },
     });
 
-    const imageKey = product?.imageIds;
-
-    const task = await db.product.delete({
-      where: {
-        id,
-      },
-    });
-
-    const bucketName = process.env.NEXT_PUBLIC_AWS_S3_BUCKET_NAME;
-
-    if (imageKey) {
-      for (const image of Array.from(imageKey)) {
-        const s3Key = image.slice(1);
-
-        const deleteCommand = new DeleteObjectCommand({
-          Bucket: bucketName,
-          Key: s3Key,
-        });
-        await s3Client.send(deleteCommand);
-      }
-    }
-
-    return NextResponse.json({});
+    return NextResponse.json({ msg: "Product deleted successfully" });
   } catch (error) {
-    return NextResponse.json({ error: "Error deleting task", status: 500 });
+    console.error("Error deleting product:", error);
+    return NextResponse.json({
+      error: "Error deleting product",
+      details: error instanceof Error ? error.message : "Unknown error"
+    }, { status: 500 });
   }
 }
 
@@ -89,21 +50,74 @@ export async function GET(
 
   try {
     const product = await db.product.findUnique({
-      where: {
-        id,
-      },
-      include: {
-        productSizes: true,
-      },
+      where: { id },
     });
 
     if (!product) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    const enriched = enrichProductWithImageURLs(product);
-    return NextResponse.json(enriched);
+    return NextResponse.json(product);
   } catch (error) {
-    return NextResponse.json({ error: "Error getting product", status: 500 });
+    console.error("Error getting product:", error);
+    return NextResponse.json({
+      error: "Error getting product",
+      details: error instanceof Error ? error.message : "Unknown error"
+    }, { status: 500 });
+  }
+}
+
+export async function PUT(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  const { id } = params;
+  const { userId } = auth();
+
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const body = await req.json();
+
+    const {
+      productId,
+      title,
+      category,
+      categoryId,
+      parentCategory,
+      topLevelCategory,
+      price,
+      rating,
+      reviewCount,
+      image,
+      link,
+    } = body;
+
+    const product = await db.product.update({
+      where: { id },
+      data: {
+        productId,
+        title,
+        category,
+        categoryId,
+        parentCategory,
+        topLevelCategory,
+        price: price !== undefined ? +price : undefined,
+        rating,
+        reviewCount: reviewCount !== undefined ? +reviewCount : undefined,
+        image,
+        link,
+      },
+    });
+
+    return NextResponse.json({ msg: "Successfully updated product", product });
+  } catch (error) {
+    console.error("Error updating product:", error);
+    return NextResponse.json({
+      error: "Error updating product",
+      details: error instanceof Error ? error.message : "Unknown error"
+    }, { status: 500 });
   }
 }

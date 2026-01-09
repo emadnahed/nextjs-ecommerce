@@ -29,6 +29,14 @@ const nextConfig = {
         protocol: "https",
         hostname: "paymadi-ecommerce.blr1.cdn.digitaloceanspaces.com",
       },
+      {
+        protocol: "https",
+        hostname: "images.meesho.com",
+      },
+      {
+        protocol: "https",
+        hostname: "images-r.meesho.com",
+      },
     ],
   },
   webpack: (config) => {

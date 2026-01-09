@@ -13,7 +13,6 @@ interface CartItemProps {
 
 const CartItem: React.FC<CartItemProps> = ({ data }) => {
   const cart = useCart();
-  const baseUrl = "https://kemal-web-storage.s3.eu-north-1.amazonaws.com";
 
   const onRemoveAll = () => {
     cart.removeAll(data);
@@ -27,13 +26,22 @@ const CartItem: React.FC<CartItemProps> = ({ data }) => {
     cart.addItem(data);
   };
 
+  // Format price from integer to INR
+  const formatLocalPrice = (price: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
+
   return (
     <li className="flex py-6 border-b">
       <div className="relative h-24 w-24 rounded-md overflow-hidden sm:h-48 sm:w-48">
         <Image
           fill
-          src={data.imageURLs?.[0] || "/placeholder.png"}
-          alt=""
+          src={data.image || "/placeholder.png"}
+          alt={data.title}
           className="object-cover object-center"
         />
       </div>
@@ -48,22 +56,17 @@ const CartItem: React.FC<CartItemProps> = ({ data }) => {
         </div>
         <div className="relative pr-9 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:pr-0">
           <div className="flex justify-between">
-            <p className=" text-lg font-semibold text-black">{data.title}</p>
+            <p className="text-lg font-semibold text-black">{data.title}</p>
           </div>
 
           <div className="mt-1 flex text-sm">
-            <p className="text-gray-500">
-              {data.type?.[0]?.toUpperCase() + data.type?.slice(1)} /{" "}
-              {data.size}
-            </p>
+            <p className="text-gray-500">{data.category}</p>
           </div>
           <div className="flex flex-col mt-2 gap-y-3 max-md:flex-row max-md:justify-between max-md:items-center">
             <p className="text-lg text-gray-900 font-semibold">
               {data.totalPrice
-                ? formatPrice(data.totalPrice)
-                : data.salePrice
-                ? formatPrice(data.salePrice)
-                : formatPrice(Number(data?.price))}
+                ? formatLocalPrice(data.totalPrice)
+                : formatLocalPrice(data.price)}
             </p>
             <div className="flex max-md:justify-end w-full">
               <div className="border w-28 rounded-3xl p-2 gap-2 flex justify-between">
