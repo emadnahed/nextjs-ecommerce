@@ -217,6 +217,69 @@ export async function getFeaturedProductsFromDB(limit: number = 20): Promise<Pro
 }
 
 /**
+ * Get women products - products with topLevelCategory="Women" and complete details (Server-side only)
+ * Uses data.name from productDetails for accurate titles
+ * Sorted by rating and review count
+ */
+export async function getWomenProductsFromDB(limit: number = 20): Promise<Product[]> {
+  try {
+    console.log('[ServerDataAccess] Fetching women products with complete details...');
+
+    // Get all productDetails to get proper names
+    const allProductDetails = await db.productDetails.findMany();
+
+    if (allProductDetails.length === 0) {
+      console.log('[ServerDataAccess] No products with details found');
+      return [];
+    }
+
+    // Create a map of productId -> proper name from data.name
+    const productDetailsMap = new Map<string, { name: string; data: any }>();
+    allProductDetails.forEach(pd => {
+      const detailData = pd.data as any;
+      const properName = detailData?.name || pd.title;
+      if (properName && !isInvalidTitle(properName)) {
+        productDetailsMap.set(pd.productId, { name: properName, data: detailData });
+      }
+    });
+
+    // Get women products
+    const products = await db.product.findMany({
+      where: {
+        topLevelCategory: 'Women'
+      }
+    });
+
+    // Filter to only products with valid details and good names
+    const womenProducts = products
+      .filter(p => productDetailsMap.has(p.productId))
+      .map(p => {
+        const details = productDetailsMap.get(p.productId)!;
+        return {
+          ...p,
+          title: details.name, // Use the proper name from productDetails
+          hasDetails: true
+        };
+      })
+      .sort((a, b) => {
+        const ratingA = parseFloat(a.rating) || 0;
+        const ratingB = parseFloat(b.rating) || 0;
+        if (ratingB !== ratingA) {
+          return ratingB - ratingA;
+        }
+        return b.reviewCount - a.reviewCount;
+      })
+      .slice(0, limit);
+
+    console.log('[ServerDataAccess] Fetched women products with valid titles:', womenProducts.length);
+    return womenProducts as Product[];
+  } catch (error) {
+    console.error('[ServerDataAccess] Error fetching women products:', error);
+    return [];
+  }
+}
+
+/**
  * Get unique product categories from database (Server-side only)
  */
 export async function getProductCategoriesFromDB(): Promise<string[]> {
