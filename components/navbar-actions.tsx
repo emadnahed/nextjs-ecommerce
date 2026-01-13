@@ -1,13 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import { Package } from "lucide-react";
+import { Package, ShoppingCart } from "lucide-react";
 import useCart from "@/hooks/use-cart";
 import { useEffect, useState } from "react";
-import Badge from "@mui/material/Badge";
 import { useUser } from "@clerk/nextjs";
+import { Button } from "@/components/ui/button";
 
 const NavbarActions = () => {
   const [isMounted, setIsMounted] = useState(false);
@@ -31,33 +29,31 @@ const NavbarActions = () => {
   }, 0);
 
   return (
-    <div className="flex items-center gap-x-4">
+    <div className="flex items-center gap-x-2">
       {isSignedIn && (
-        <button
+        <Button
           onClick={() => router.push("/my-orders")}
-          className="flex items-center px-[6px] py-1 hover:opacity-75 transition"
+          variant="ghost"
+          size="icon"
           title="My Orders"
+          className="rounded-full"
         >
-          <Package size={24} />
-        </button>
+          <Package size={20} />
+        </Button>
       )}
-      <button
+      <Button
         onClick={() => router.push("/cart")}
-        className="flex items-center px-[6px] py-1"
+        variant="ghost" 
+        size="icon"
+        className="rounded-full relative"
       >
-        <Badge
-          badgeContent={shopCount}
-          color="info"
-          max={9}
-          sx={{
-            "& .MuiBadge-anchorOriginTopRight": {
-              background: "#171717",
-            },
-          }}
-        >
-          <ShoppingCartIcon style={{ fontSize: "25px" }} />
-        </Badge>
-      </button>
+        <ShoppingCart size={20} />
+        {shopCount > 0 && (
+          <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full border-2 border-white">
+            {shopCount > 9 ? "9+" : shopCount}
+          </span>
+        )}
+      </Button>
     </div>
   );
 };
