@@ -1,7 +1,7 @@
 import filteredData from "@/app/utils/filteredData";
 import ProductCard from "@/components/ui/product-card";
 import { siteConfig } from "@/config/site";
-import { getProductsByTypeFromDB } from "@/lib/serverDataAccess";
+import { getProductsByCategoryFromDB } from "@/lib/serverDataAccess";
 import { Product } from "@/types";
 import { type Metadata } from "next";
 
@@ -11,7 +11,7 @@ export async function generateMetadata({
   params: { category: string };
 }): Promise<Metadata> {
   console.log('[CategoryPage] Fetching metadata for category:', params.category);
-  const data = await getProductsByTypeFromDB(params.category);
+  const data = await getProductsByCategoryFromDB(params.category);
   if (!data || data.length <= 0)
     return {
       title: "ZEYREY Store",
@@ -20,9 +20,9 @@ export async function generateMetadata({
 
   return {
     title: `${
-      data[0]?.type?.[0]?.toUpperCase() + data[0]?.type?.slice(1)
+      data[0]?.category?.[0]?.toUpperCase() + data[0]?.category?.slice(1)
     } | ${siteConfig.name}`,
-    description: data[0]?.description,
+    description: data[0]?.title,
   };
 }
 
@@ -34,7 +34,7 @@ const SearchPage = async ({
   searchParams: { [key: string]: string | string[] | undefined };
 }) => {
   console.log('[CategoryPage] Fetching products for category:', params.category);
-  const data = await getProductsByTypeFromDB(params.category);
+  const data = await getProductsByCategoryFromDB(params.category);
   console.log('[CategoryPage] Products fetched:', data.length);
 
   let filtered: Product[] | undefined;

@@ -63,10 +63,10 @@ const NavItem = () => {
           key={route.href}
           size="sm"
           variant="ghost"
-          className={`w-full text-white font-normal justify-start ${
+          className={`w-full text-white font-normal justify-start hover:bg-white/10 ${
             (pathname === route.href ||
               pathname.startsWith(`${route.href}/new`)) &&
-            "bg-slate-600 text-sky-300"
+            "bg-white/20 text-white font-bold"
           }`}
         >
           {route.icon}

@@ -22,6 +22,7 @@ const HomePage = async () => {
       <Container>
         <Billboard />
       </Container>
+
       <div className="mt-12 mb-24">
         <TitleHeader title="Featured Products" url="/featured" />
         {featuredProducts.length > 0 && (
@@ -29,7 +30,7 @@ const HomePage = async () => {
         )}
       </div>
       <div className="mb-24">
-        <TitleHeader title="Women Products" url="/shop?topLevelCategory=Women" />
+        <TitleHeader title="Women's Fashion" url="/shop?topLevelCategory=Women Western" />
         {womenProducts.length > 0 && (
           <CarouselFeatured data={womenProducts} />
         )}

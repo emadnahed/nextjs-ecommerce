@@ -47,11 +47,7 @@ const PriceInput = ({ data }: PriceInputProps) => {
       
       if (products && products.length > 0) {
         const prices = products.map((product: Product) => {
-          if (product.salePrice && product.salePrice > 0) {
-            return parseFloat(product.salePrice.toString());
-          } else {
-            return parseFloat(product.price.toString());
-          }
+          return parseFloat(product.price.toString());
         });
         
         const max = Math.max(...prices);

@@ -42,10 +42,10 @@ const NavItem = () => {
         return (
           <Link key={route.label} href={route.href} className="p-2 max-md:p-0">
             <p
-              className={`max-md:text-yellow-50 font-serif text-gray-600 text-l max-md:text-xl hover:text-gray-300  ${
+              className={`font-medium text-white hover:text-white/80 transition-colors ${
                 (pathname === route.href ||
                   pathname.startsWith(`${route.href}/`)) &&
-                "font-semibold max-md:underline"
+                "font-bold underline decoration-yellow-400 underline-offset-4"
               }`}
             >
               {route.label}

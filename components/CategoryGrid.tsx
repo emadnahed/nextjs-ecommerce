@@ -14,7 +14,7 @@ const CategoryGrid = ({ categories }: CategoryGridProps) => {
             <Link
               key={category}
               href={`/shop?topLevelCategory=${encodeURIComponent(category)}`}
-              className="text-sm font-medium text-gray-700 hover:text-black transition-colors whitespace-nowrap"
+              className="text-sm font-medium text-gray-700 hover:text-primary hover:underline transition-colors whitespace-nowrap"
             >
               {category}
             </Link>

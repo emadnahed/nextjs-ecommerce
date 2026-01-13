@@ -25,18 +25,14 @@ const useCart = create(
         const currentItems = get().items;
 
         const existingItem = currentItems.findIndex(
-          (item) => item.id === data.id && item.size === data.size
+          (item) => item.id === data.id
         );
 
         if (existingItem !== -1) {
           const updatedItems = [...currentItems];
           updatedItems[existingItem].quantity += 1;
-
           updatedItems[existingItem].totalPrice =
-            updatedItems[existingItem].quantity *
-            (data.finalPrice && data.finalPrice > 0
-              ? data.finalPrice
-              : +data.price);
+            updatedItems[existingItem].quantity * data.price;
 
           set({ items: updatedItems });
           toast.success("Item added to cart.");
@@ -47,10 +43,7 @@ const useCart = create(
               {
                 ...data,
                 quantity: 1,
-                totalPrice:
-                  data.finalPrice && data.finalPrice > 0
-                    ? data.finalPrice
-                    : +data.price,
+                totalPrice: data.price,
               },
             ],
           });
@@ -60,7 +53,7 @@ const useCart = create(
       removeItem: (data: Product) => {
         const currentItems = get().items;
         const existingItemIndex = currentItems.findIndex(
-          (item) => item.id === data.id && item.size === data.size
+          (item) => item.id === data.id
         );
 
         if (existingItemIndex !== -1) {
@@ -68,10 +61,7 @@ const useCart = create(
           if (updatedItems[existingItemIndex].quantity > 1) {
             updatedItems[existingItemIndex].quantity -= 1;
             updatedItems[existingItemIndex].totalPrice =
-              updatedItems[existingItemIndex].quantity *
-              (data.finalPrice && data.finalPrice > 0
-                ? data.finalPrice
-                : +data.price);
+              updatedItems[existingItemIndex].quantity * data.price;
           } else {
             updatedItems.splice(existingItemIndex, 1);
           }
@@ -82,7 +72,7 @@ const useCart = create(
       removeAll: (data: Product) => {
         const currentItems = get().items;
         const remainingItems = currentItems.filter(
-          (item) => !(item.id === data.id && item.size === data.size)
+          (item) => item.id !== data.id
         );
         set({ items: remainingItems });
         toast.success("Item removed from cart.");

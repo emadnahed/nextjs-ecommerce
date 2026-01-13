@@ -22,29 +22,40 @@ model Category {
 }
 
 // Product model - maps to "products" collection in MongoDB
+// Schema matches imported Meesho product data
 model Product {
-  id               String      @id @default(auto()) @map("_id") @db.ObjectId
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId        String   @unique
+  title            String
   category         String
   categoryId       Int
   image            String
   link             String
   parentCategory   String
   price            Int
-  productId        String      @unique(map: "productId_1")
   rating           String
   reviewCount      Int
   scrapedAt        String
-  title            String
   topLevelCategory String
 
-  // Relations
-  orderItems       OrderItem[]
-
-  @@index([category], map: "category_1")
-  @@index([topLevelCategory], map: "topLevelCategory_1")
-  @@index([price], map: "price_1")
-  @@index([rating], map: "rating_1")
+  @@index([category])
+  @@index([topLevelCategory])
+  @@index([price])
+  @@index([rating])
   @@map("products")
+}
+
+// ProductSize model for product variants
+model ProductSize {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId String
+  size      String
+  quantity  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+  @@map("productsizes")
 }
 
 // Order model for managing customer orders
@@ -78,13 +89,14 @@ model Order {
 
 // OrderItem model for individual items in an order
 model OrderItem {
-  id          String  @id @default(auto()) @map("_id") @db.ObjectId
-  orderId     String  @db.ObjectId
-  order       Order   @relation(fields: [orderId], references: [id])
-  productId   String  @db.ObjectId
-  product     Product @relation(fields: [productId], references: [id])
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  orderId     String   @db.ObjectId
+  order       Order    @relation(fields: [orderId], references: [id])
+  productId   String
   productName String
-  quantity    Int     @default(1)
+  size        String?
+  color       String?
+  quantity    Int      @default(1)
   price       Int
 
   createdAt DateTime @default(now())

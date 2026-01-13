@@ -10,21 +10,21 @@ export interface Category {
   url: string;
 }
 
-// Product interface matching MongoDB structure
+// Product interface matching MongoDB structure (imported Meesho data)
 export interface Product {
   id: string;
   productId: string;
   title: string;
   category: string;
   categoryId: number;
+  image: string;
+  link: string;
   parentCategory: string;
-  topLevelCategory: string;
   price: number;
   rating: string;
   reviewCount: number;
-  image: string;
-  link: string;
   scrapedAt: string;
+  topLevelCategory: string;
   hasDetails?: boolean; // True if product has detailed information in productDetails collection
 }
 

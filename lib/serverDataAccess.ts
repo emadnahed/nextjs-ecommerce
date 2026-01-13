@@ -243,10 +243,10 @@ export async function getWomenProductsFromDB(limit: number = 20): Promise<Produc
       }
     });
 
-    // Get women products
+    // Get women products (Women Western in the database)
     const products = await db.product.findMany({
       where: {
-        topLevelCategory: 'Women'
+        topLevelCategory: 'Women Western'
       }
     });
 

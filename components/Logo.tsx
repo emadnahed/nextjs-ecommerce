@@ -4,9 +4,12 @@ import React from "react";
 const Logo = () => {
   return (
     <Link href="/">
-      <div className="hover:opacity-75 transition flex items-center">
-        <span className="text-1xl font-light tracking-[0.2em] text-gray-800 uppercase">
+      <div className="hover:opacity-75 transition flex items-center gap-2">
+        <span className="text-xl font-bold text-white">
           ZEYREY
+        </span>
+        <span className="text-yellow-400 text-3xl leading-none">
+          *
         </span>
       </div>
     </Link>

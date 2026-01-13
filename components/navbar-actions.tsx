@@ -36,7 +36,7 @@ const NavbarActions = () => {
           variant="ghost"
           size="icon"
           title="My Orders"
-          className="rounded-full"
+          className="rounded-full text-white hover:bg-white/20 hover:text-white"
         >
           <Package size={20} />
         </Button>
@@ -45,11 +45,11 @@ const NavbarActions = () => {
         onClick={() => router.push("/cart")}
         variant="ghost" 
         size="icon"
-        className="rounded-full relative"
+        className="rounded-full relative text-white hover:bg-white/20 hover:text-white"
       >
         <ShoppingCart size={20} />
         {shopCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full border-2 border-white">
+          <span className="absolute -top-1 -right-1 bg-yellow-400 text-black text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full">
             {shopCount > 9 ? "9+" : shopCount}
           </span>
         )}

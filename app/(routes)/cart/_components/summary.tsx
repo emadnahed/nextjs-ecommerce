@@ -81,7 +81,7 @@ export function Summary() {
       <Button
         onClick={handleCheckoutClick}
         disabled={items.length === 0}
-        className="w-full mt-6"
+        className="w-full mt-6 rounded-full font-bold text-lg hover:bg-primary/90"
       >
         {items.length > 0 ? "Proceed to Checkout" : "Your cart is empty"}
       </Button>

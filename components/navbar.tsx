@@ -19,7 +19,7 @@ const NavBar = () => {
   const { isLoaded, isSignedIn } = useUser();
 
   return (
-    <div className="border-b sticky top-0 z-50 bg-white/75 backdrop-blur-md transition-all">
+    <div className="sticky top-0 z-50 bg-primary transition-all text-white">
       <Container>
         <div className="px-4 sm:px-6 lg:px-8 flex h-16 items-center justify-between">
           <MobileSidebar>
@@ -51,10 +51,10 @@ const NavBar = () => {
               </div>
             ) : isLoaded ? (
               <div className="flex items-center gap-2 ml-2">
-                <Button className="rounded-sm" asChild>
+                <Button className="rounded-full bg-white text-primary hover:bg-gray-100 border-none" asChild>
                   <SignUpButton />
                 </Button>
-                <Button className="rounded-sm" asChild>
+                <Button className="rounded-full bg-white text-primary hover:bg-gray-100 border-none" asChild>
                   <SignInButton />
                 </Button>
               </div>

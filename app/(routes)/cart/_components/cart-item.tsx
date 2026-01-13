@@ -69,13 +69,13 @@ const CartItem: React.FC<CartItemProps> = ({ data }) => {
                 : formatLocalPrice(data.price)}
             </p>
             <div className="flex max-md:justify-end w-full">
-              <div className="border w-28 rounded-3xl p-2 gap-2 flex justify-between">
-                <button onClick={onRemove}>
-                  <RemoveIcon />
+              <div className="border border-gray-300 w-32 rounded-full p-1 gap-2 flex justify-between items-center bg-gray-50">
+                <button onClick={onRemove} className="p-1 rounded-full hover:bg-white hover:shadow-sm text-primary transition">
+                  <RemoveIcon fontSize="small" />
                 </button>
-                <p>{data.quantity}</p>
-                <button onClick={onAdd}>
-                  <AddIcon />
+                <p className="font-semibold text-gray-900">{data.quantity}</p>
+                <button onClick={onAdd} className="p-1 rounded-full hover:bg-white hover:shadow-sm text-primary transition">
+                  <AddIcon fontSize="small" />
                 </button>
               </div>
             </div>

@@ -36,7 +36,7 @@ const Footer = () => {
                   { text: "About Us", url: "/about-us" }
                 ].map((item, index) => (
                   <li key={index}>
-                    <Link href={item.url} className="text-gray-600 hover:text-blue-600 transition-colors">
+                    <Link href={item.url} className="text-gray-600 hover:text-primary transition-colors">
                       {item.text}
                     </Link>
                   </li>
@@ -56,7 +56,7 @@ const Footer = () => {
                   { text: "Cancellation Policy", url: "/cancellation-policy" }
                 ].map((item, index) => (
                   <li key={index}>
-                    <Link href={item.url} className="text-gray-600 hover:text-blue-600 transition-colors">
+                    <Link href={item.url} className="text-gray-600 hover:text-primary transition-colors">
                       {item.text}
                     </Link>
                   </li>

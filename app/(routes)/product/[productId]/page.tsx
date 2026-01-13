@@ -20,7 +20,7 @@ export async function generateMetadata({
 
   return {
     title: `${getProducts.title} | ${siteConfig.name}`,
-    description: getProducts.description,
+    description: `${getProducts.title} - ${getProducts.category}`,
   };
 }
 

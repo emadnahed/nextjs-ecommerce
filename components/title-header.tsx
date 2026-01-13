@@ -10,7 +10,7 @@ const TitleHeader = ({ title, url }: TitleHeaderProps) => {
     <div className="flex justify-between items-center font-semibold px-4 py-6 mt-7">
       <h1 className="font-semibold text-2xl">{title}</h1>
       {url && (
-        <Link className="text-xl underline" href={url}>
+        <Link className="text-sm font-medium text-primary hover:underline" href={url}>
           See All
         </Link>
       )}

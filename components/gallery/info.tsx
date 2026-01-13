@@ -76,12 +76,12 @@ const Info: React.FC<InfoProps> = ({ data, productDetails }) => {
 
         {/* Price */}
         <div className="flex items-baseline gap-3 flex-wrap">
-          <span className="text-3xl font-bold text-gray-900">
+          <span className="text-3xl font-bold text-black">
             {formatPrice(supplier?.price || data.price)}
           </span>
           {mrpDetails?.mrp && mrpDetails.mrp > (supplier?.price || data.price) && (
             <>
-              <span className="text-lg text-gray-400 line-through">
+              <span className="text-lg text-gray-500 line-through">
                 {formatPrice(mrpDetails.mrp)}
               </span>
               <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-sm font-semibold">
@@ -143,12 +143,12 @@ const Info: React.FC<InfoProps> = ({ data, productDetails }) => {
       {/* ===== SECTION 4: Add to Cart ===== */}
       <Button
         onClick={onAddToCart}
-        className="w-full h-12 text-base font-semibold"
+        className="w-full h-12 text-base font-bold rounded-full hover:shadow-lg transition-all"
         size="lg"
         disabled={!inStock}
       >
         <ShoppingCart className="w-5 h-5 mr-2" />
-        {inStock ? 'Add To Cart' : 'Currently Unavailable'}
+        {inStock ? 'Add to cart' : 'Currently Unavailable'}
       </Button>
 
       {/* ===== SECTION 5: Trust Badges ===== */}

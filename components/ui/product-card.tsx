@@ -66,44 +66,46 @@ const ProductCard: React.FC<ProductCard> = ({ data }) => {
   const rating = parseFloat(data.rating) || 0;
 
   return (
-    <div onClick={handleClick} className="bg-white group cursor-pointer rounded-xl border p-3 space-y-4 hover:shadow-xl transition-all duration-300">
-      {/* Images and Actions */}
-      <div className="aspect-square rounded-xl bg-gray-100 relative">
+    <div onClick={handleClick} className="bg-white group cursor-pointer rounded-lg border border-gray-200 p-3 space-y-3 hover:shadow-lg transition-all duration-300 flex flex-col h-full">
+      {/* Images */}
+      <div className="aspect-square rounded-md bg-gray-100 relative overflow-hidden">
         <Image
           src={getImageUrl(data.image)}
           alt={data.title}
           fill
-          className="aspect-square object-cover rounded-xl"
+          className="aspect-square object-cover rounded-md group-hover:scale-105 transition-transform duration-300"
           quality={85}
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
         />
-        <div className="opacity-0 group-hover:opacity-100 transition absolute w-full px-6 bottom-5">
-          <div className="flex gap-x-6 justify-center">
-            <IconButton 
-              onClick={onPreview} 
-              icon={<Expand size={20} className="text-gray-600" />} 
-            />
-            <IconButton
-              onClick={onAddToCart} 
-              icon={<ShoppingCart size={20} className="text-gray-600" />} 
-            />
-          </div>
-        </div>
       </div>
+      
       {/* Description */}
-      <div>
-        <p className="font-semibold text-lg line-clamp-1">{data.title}</p>
-        <p className="text-sm text-gray-500">{data.category}</p>
+      <div className="flex-1">
+        <div className="flex items-center justify-between mb-1">
+           {rating > 0 && (
+            <div className="flex items-center gap-1">
+              <Star className="w-3 h-3 fill-black text-black" />
+              <span className="text-xs text-gray-700">{rating.toFixed(1)}</span>
+            </div>
+          )}
+        </div>
+        <p className="font-medium text-gray-900 text-sm line-clamp-2 leading-tight hover:underline">
+          {data.title}
+        </p>
       </div>
-      {/* Price & Rating */}
-      <div className="flex items-center justify-between">
-        <div className="font-semibold text-lg">{formatPrice(data.price)}</div>
-        {rating > 0 && (
-          <div className="flex items-center gap-1">
-            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-            <span className="text-sm font-medium">{rating.toFixed(1)}</span>
-          </div>
-        )}
+
+      {/* Price & Action */}
+      <div className="space-y-3 mt-auto">
+        <div className="font-bold text-xl text-green-700">
+          {formatPrice(data.price)}
+        </div>
+        
+        <button
+          onClick={onAddToCart}
+          className="w-full rounded-full border border-primary text-primary font-bold py-1.5 px-4 text-sm hover:bg-primary/5 transition-colors"
+        >
+          Add
+        </button>
       </div>
     </div>
   );
