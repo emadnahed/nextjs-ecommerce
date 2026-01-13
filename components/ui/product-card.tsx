@@ -66,7 +66,7 @@ const ProductCard: React.FC<ProductCard> = ({ data }) => {
   const rating = parseFloat(data.rating) || 0;
 
   return (
-    <div onClick={handleClick} className="bg-white group cursor-pointer rounded-lg border border-gray-200 p-3 space-y-3 hover:shadow-lg transition-all duration-300 flex flex-col h-full">
+    <div onClick={handleClick} className="bg-white group cursor-pointer rounded-lg border border-gray-200 p-2 sm:p-3 space-y-2 sm:space-y-3 hover:shadow-lg transition-all duration-300 flex flex-col h-full">
       {/* Images */}
       <div className="aspect-square rounded-md bg-gray-100 relative overflow-hidden">
         <Image
@@ -85,24 +85,24 @@ const ProductCard: React.FC<ProductCard> = ({ data }) => {
            {rating > 0 && (
             <div className="flex items-center gap-1">
               <Star className="w-3 h-3 fill-black text-black" />
-              <span className="text-xs text-gray-700">{rating.toFixed(1)}</span>
+              <span className="text-[10px] sm:text-xs text-gray-700">{rating.toFixed(1)}</span>
             </div>
           )}
         </div>
-        <p className="font-medium text-gray-900 text-sm line-clamp-2 leading-tight hover:underline">
+        <p className="font-medium text-gray-900 text-xs sm:text-sm line-clamp-2 leading-tight hover:underline">
           {data.title}
         </p>
       </div>
 
       {/* Price & Action */}
-      <div className="space-y-3 mt-auto">
-        <div className="font-bold text-xl text-green-700">
+      <div className="space-y-2 sm:space-y-3 mt-auto">
+        <div className="font-bold text-lg sm:text-xl text-green-700">
           {formatPrice(data.price)}
         </div>
         
         <button
           onClick={onAddToCart}
-          className="w-full rounded-full border border-primary text-primary font-bold py-1.5 px-4 text-sm hover:bg-primary/5 transition-colors"
+          className="w-full rounded-full border border-primary text-primary font-bold py-1 px-3 sm:py-1.5 sm:px-4 text-xs sm:text-sm hover:bg-primary/5 transition-colors"
         >
           Add
         </button>

@@ -29,13 +29,13 @@ const CarouselFeatured = ({ data }: CarouselFeaturedProps) => {
       ]}
       className="w-full relative"
     >
-      <CarouselPrevious className="absolute z-50 left-7 w-min h-min text-xl p-4 top-[45%]" />
-      <CarouselNext className="absolute z-50 w-min h-min right-4 text-xl top-[45%] p-4" />
+      <CarouselPrevious className="absolute z-50 left-7 w-min h-min text-xl p-4 top-[45%] max-md:hidden" />
+      <CarouselNext className="absolute z-50 w-min h-min right-4 text-xl top-[45%] p-4 max-md:hidden" />
       <CarouselContent className="-ml-1">
         {data.map((product, index) => (
           <CarouselItem
             key={product.id}
-            className="max-sm:basis-3/4 md:basis-1/2 lg:basis-1/3"
+            className="basis-[75%] md:basis-1/2 lg:basis-1/3"
           >
             <ProductCard data={product} />
           </CarouselItem>

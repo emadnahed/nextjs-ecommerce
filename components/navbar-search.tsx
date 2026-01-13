@@ -184,7 +184,7 @@ const NavbarSearch = () => {
             onClick={handleSearchSubmit}
             className="p-3 text-center text-sm font-medium text-blue-600 hover:bg-blue-50 cursor-pointer border-t border-gray-200"
           >
-            View all results for "{search}"
+            View all results for &quot;{search}&quot;
           </div>
         </div>
       )}
@@ -192,7 +192,7 @@ const NavbarSearch = () => {
       {/* No Results */}
       {showDropdown && results.length === 0 && search.length >= 2 && !isLoading && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 z-50 p-4 text-center">
-          <p className="text-sm text-gray-500">No products found for "{search}"</p>
+          <p className="text-sm text-gray-500">No products found for &quot;{search}&quot;</p>
         </div>
       )}
     </div>

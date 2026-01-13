@@ -108,7 +108,7 @@ const ProductItem = () => {
                 <h3 className="font-bold text-2xl text-gray-900">You May Also Like</h3>
                 <p className="text-gray-500 mt-1">More products in {productQuery.data.category}</p>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                 {filteredData?.map((item: Product) => {
                   return <ProductCard key={item.id} data={item} />;
                 })}
