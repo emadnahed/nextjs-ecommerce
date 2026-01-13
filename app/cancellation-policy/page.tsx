@@ -57,10 +57,19 @@ const CancellationPolicy = () => {
             <p className="text-gray-700 mb-4">
               For any questions or assistance regarding order cancellations, please contact our support team:
             </p>
-            <ul className="space-y-2 text-gray-700">
-              <li>Email: <a href="mailto:support@foticket.store" className="text-blue-600 hover:underline">support@foticket.store</a></li>
-              <li>Phone: <a href="tel:+919150913329" className="text-blue-600 hover:underline">+91 9150913329</a></li>
-            </ul>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <p className="font-semibold text-gray-900 mb-2">FOTICKET PRIVATE LIMITED</p>
+              <p className="text-xs text-gray-500 mb-3">CIN: U62090KA2025PTC211925</p>
+              <ul className="space-y-2 text-gray-600 text-sm">
+                <li>Email: <a href="mailto:support@foticket.store" className="text-blue-600 hover:underline">support@foticket.store</a></li>
+                <li className="pt-2">
+                  <span className="font-medium">Registered Office:</span><br />
+                  No. 1383/433, HBR Layout, 1st Stage,<br />
+                  Arabic College, Bangalore North,<br />
+                  Karnataka, India - 560045
+                </li>
+              </ul>
+            </div>
             <p className="mt-6 text-lg font-medium text-center text-gray-900">
               Thank you for choosing <span className="text-blue-600">FOTICKET PRIVATE LIMITED</span>!
             </p>
@@ -68,7 +77,7 @@ const CancellationPolicy = () => {
         </div>
 
         <div className="mt-12 pt-8 border-t border-gray-200 text-center">
-          <p className="text-sm text-gray-500">© {new Date().getFullYear()} Foticket. All rights reserved.</p>
+          <p className="text-sm text-gray-500">© {new Date().getFullYear()} FOTICKET PRIVATE LIMITED. All rights reserved.</p>
         </div>
       </div>
     </div>
