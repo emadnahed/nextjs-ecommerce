@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Refund Policy - ZEYREY',
-  description: 'Learn about our refund policy and process at ZEYREY TECHNOLOGY PRIVATE LIMITED.',
+  title: 'Refund Policy - Foticket',
+  description: 'Learn about our refund policy and process at FOTICKET PRIVATE LIMITED.',
 };
 
 const RefundPolicy = () => {
@@ -44,7 +44,7 @@ const RefundPolicy = () => {
           </div>
           <div className="px-4 py-5 sm:p-6">
             <ol className="list-decimal pl-5 space-y-3 text-gray-700">
-              <li>To request a refund, customers must contact our support team at <a href="mailto:support@zeyrey.net" className="text-blue-600 hover:underline">support@zeyrey.net</a> with their order details and the reason for the refund.</li>
+              <li>To request a refund, customers must contact our support team at <a href="mailto:support@foticket.store" className="text-blue-600 hover:underline">support@foticket.store</a> with their order details and the reason for the refund.</li>
               <li>Once the return is approved, the product must be shipped back to our warehouse at the customer's expense.</li>
             </ol>
           </div>
@@ -62,22 +62,43 @@ const RefundPolicy = () => {
           </div>
         </div>
 
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
           <div className="px-4 py-5 sm:px-6">
             <h2 className="text-xl font-semibold text-gray-900">Additional Notes</h2>
           </div>
           <div className="px-4 py-5 sm:p-6">
             <ul className="list-disc pl-5 space-y-2 text-gray-700">
-              <li>ZEYREY TECHNOLOGY PRIVATE LIMITED reserves the right to refuse refunds for items that do not meet the above conditions.</li>
+              <li>FOTICKET PRIVATE LIMITED reserves the right to refuse refunds for items that do not meet the above conditions.</li>
               <li>Shipping fees are non-refundable unless the product is damaged or incorrect.</li>
-              <li>For any questions or assistance regarding cancellations or refunds, please contact our support team at <a href="mailto:support@zeyrey.net" className="text-blue-600 hover:underline">support@zeyrey.net</a> or call us at <a href="tel:+919150913329" className="text-blue-600 hover:underline">+91 9150913329</a></li>
             </ul>
-            <p className="mt-6 text-lg font-medium text-center text-gray-900">Thank you for shopping with ZEYREY TECHNOLOGY PRIVATE LIMITED!</p>
+          </div>
+        </div>
+
+        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+          <div className="px-4 py-5 sm:px-6">
+            <h2 className="text-xl font-semibold text-gray-900">Contact Us</h2>
+          </div>
+          <div className="px-4 py-5 sm:p-6">
+            <p className="text-gray-700 mb-4">For any questions or assistance regarding refunds, please contact us:</p>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <p className="font-semibold text-gray-900 mb-2">FOTICKET PRIVATE LIMITED</p>
+              <p className="text-xs text-gray-500 mb-3">CIN: U62090KA2025PTC211925</p>
+              <ul className="space-y-2 text-gray-600 text-sm">
+                <li>Email: <a href="mailto:support@foticket.store" className="text-blue-600 hover:underline">support@foticket.store</a></li>
+                <li className="pt-2">
+                  <span className="font-medium">Registered Office:</span><br />
+                  No. 1383/433, HBR Layout, 1st Stage,<br />
+                  Arabic College, Bangalore North,<br />
+                  Karnataka, India - 560045
+                </li>
+              </ul>
+            </div>
+            <p className="mt-6 text-lg font-medium text-center text-gray-900">Thank you for shopping with FOTICKET PRIVATE LIMITED!</p>
           </div>
         </div>
 
         <div className="mt-12 pt-8 border-t border-gray-200 text-center">
-          <p className="text-sm text-gray-500">© {new Date().getFullYear()} ZEYREY. All rights reserved.</p>
+          <p className="text-sm text-gray-500">© {new Date().getFullYear()} FOTICKET PRIVATE LIMITED. All rights reserved.</p>
         </div>
       </div>
     </div>

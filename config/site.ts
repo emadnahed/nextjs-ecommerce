@@ -1,4 +1,4 @@
 export const siteConfig = {
-  name: "ZEYREY Store",
-  description: "E-ecommerce, selling products, and new productivity",
+  name: "Foticket",
+  description: "Your one-stop shop for quality products at great prices",
 };

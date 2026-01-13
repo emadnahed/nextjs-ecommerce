@@ -52,7 +52,7 @@ export default authMiddleware({
     // If user is not authenticated and trying to access admin, redirect to sign-in
     if (!auth.userId && pathname.startsWith('/admin')) {
       // Get the proper origin from headers or fallback to production domain
-      const host = req.headers.get('host') || 'www.zeyrey.online';
+      const host = req.headers.get('host') || 'www.foticket.store';
       const protocol = req.headers.get('x-forwarded-proto') || 'https';
       const origin = `${protocol}://${host}`;
 

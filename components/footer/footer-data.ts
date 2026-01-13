@@ -1,4 +1,4 @@
-// Footer data constants for ZEYREY e-commerce footer
+// Footer data constants for Foticket e-commerce footer
 
 export interface FooterCategory {
   name: string;
@@ -15,27 +15,27 @@ export interface AboutContentSection {
   content: string;
 }
 
-// About ZEYREY content sections
+// About Foticket content sections
 export const ABOUT_CONTENT: AboutContentSection[] = [
   {
     title: "Discover a World of Affordable Fashion & Everyday Essentials",
     content:
-      "Upgrade your wardrobe and stock your home with the latest trends and essentials at prices designed for everyday value. ZEYREY offers a vast selection of products across all categories, ensuring you find everything you need at prices suited for everyday budgets.",
+      "Upgrade your wardrobe and stock your home with the latest trends and essentials at prices designed for everyday value. Foticket offers a vast selection of products across all categories, ensuring you find everything you need at prices suited for everyday budgets.",
   },
   {
     title: "Shop Millions of Products Across All Categories",
     content:
-      "From trendy fashion finds to essential homeware, ZEYREY is your one-stop shop for everything you need. Explore millions of products across a wide variety of categories, ensuring you find the perfect item for any occasion.",
+      "From trendy fashion finds to essential homeware, Foticket is your one-stop shop for everything you need. Explore millions of products across a wide variety of categories, ensuring you find the perfect item for any occasion.",
   },
   {
     title: "Latest Women's Fashion Is Right Here",
     content:
-      "Are you looking to revamp your wardrobe with stylish and affordable pieces? Look no further than ZEYREY's extensive collection of women's western wear. Find trendy dresses, casual jeans, and comfortable tops suitable for any occasion. Our collection reflects current trends, with fresh styles added regularly, ensuring you stay on top of your fashion game. Elevate your outfit and add a touch of personality with our diverse range of accessories, jewelry sets, handbags, and footwear to complement your style.",
+      "Are you looking to revamp your wardrobe with stylish and affordable pieces? Look no further than Foticket's extensive collection of women's western wear. Find trendy dresses, casual jeans, and comfortable tops suitable for any occasion. Our collection reflects current trends, with fresh styles added regularly, ensuring you stay on top of your fashion game. Elevate your outfit and add a touch of personality with our diverse range of accessories, jewelry sets, handbags, and footwear to complement your style.",
   },
   {
     title: "Largest Collection of Menswear and Accessories",
     content:
-      "Upgrade your casual or formal attire with ZEYREY's men's wear collection. We offer a vast selection of T-shirts, jeans, polos, coats, and shirts in all sizes. Our user-friendly search tool allows you to filter by size, color, and material, making it easy to find the perfect fit. Explore our collection of trendy accessories, including wallets, cufflinks, and bags, to add a touch of sophistication to your look. Need a new sherwani or any Indian Attire for an upcoming wedding function? Check out our latest men's ethnic wear collection.",
+      "Upgrade your casual or formal attire with Foticket's men's wear collection. We offer a vast selection of T-shirts, jeans, polos, coats, and shirts in all sizes. Our user-friendly search tool allows you to filter by size, color, and material, making it easy to find the perfect fit. Explore our collection of trendy accessories, including wallets, cufflinks, and bags, to add a touch of sophistication to your look. Need a new sherwani or any Indian Attire for an upcoming wedding function? Check out our latest men's ethnic wear collection.",
   },
   {
     title: "Top Quality Beauty & Personal Care Products",
@@ -50,7 +50,7 @@ export const ABOUT_CONTENT: AboutContentSection[] = [
   {
     title: "Shop Home Decor & Kitchen Products, Electronics, and Much More",
     content:
-      "If you want to elevate your kitchen space, then you've come to the right place! Discover and browse a wide variety of quality home products, kitchen essentials like cooking utensils and serveware, kitchen storage, appliances like blenders, choppers, cooktops, and more! Home styling is not just a trend but a necessity of the hour for every home. ZEYREY offers a variety of home decor essentials across styles and budgets. At ZEYREY, you'll find a variety of gadgets and accessories for your everyday electronic needs.",
+      "If you want to elevate your kitchen space, then you've come to the right place! Discover and browse a wide variety of quality home products, kitchen essentials like cooking utensils and serveware, kitchen storage, appliances like blenders, choppers, cooktops, and more! Home styling is not just a trend but a necessity of the hour for every home. Foticket offers a variety of home decor essentials across styles and budgets. At Foticket, you'll find a variety of gadgets and accessories for your everyday electronic needs.",
   },
   {
     title: "Health, Fitness & Sports",
@@ -223,13 +223,13 @@ export const FOOTER_CATEGORIES: FooterCategorySection[] = [
 
 // Community and app download content
 export const COMMUNITY_CONTENT = {
-  title: "Join the ZEYREY Community",
+  title: "Join the Foticket Community",
   description:
-    "For a seamless online shopping experience, feel free to download the ZEYREY App. With millions of happy customers, we believe in growing our community. To give you a hassle-free online shopping experience, plenty of user-friendly features will make your shopping online easier than ever. ZEYREY offers multiple payment options, debit and credit cards, UPI, and COD, to help you with a smooth checkout process. For any queries or concerns, send us an email at support@zeyrey.net.",
+    "For a seamless online shopping experience, feel free to download the Foticket App. With millions of happy customers, we believe in growing our community. To give you a hassle-free online shopping experience, plenty of user-friendly features will make your shopping online easier than ever. Foticket offers multiple payment options, debit and credit cards, UPI, and COD, to help you with a smooth checkout process. For any queries or concerns, send us an email at support@foticket.store.",
 };
 
 export const APP_DOWNLOAD_CONTENT = {
-  title: "Download ZEYREY App Now",
+  title: "Download Foticket App Now",
   subtitle: "More Than Just Shopping",
-  description: "Interested in selling online? ZEYREY enables individuals to start their selling journey with ease.",
+  description: "Interested in selling online? Foticket enables individuals to start their selling journey with ease.",
 };

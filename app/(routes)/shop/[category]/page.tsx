@@ -1,7 +1,12 @@
 import filteredData from "@/app/utils/filteredData";
 import ProductCard from "@/components/ui/product-card";
+import Pagination from "@/components/ui/pagination";
 import { siteConfig } from "@/config/site";
-import { getProductsByCategoryFromDB } from "@/lib/serverDataAccess";
+import {
+  getProductsByCategoryFromDB,
+  getProductsByCategoryPaginatedFromDB,
+  DEFAULT_ITEMS_PER_PAGE,
+} from "@/lib/serverDataAccess";
 import { Product } from "@/types";
 import { type Metadata } from "next";
 
@@ -14,7 +19,7 @@ export async function generateMetadata({
   const data = await getProductsByCategoryFromDB(params.category);
   if (!data || data.length <= 0)
     return {
-      title: "ZEYREY Store",
+      title: "Foticket Store",
       description: "E-ecommerce, selling products, and new productivity",
     };
 
@@ -26,32 +31,75 @@ export async function generateMetadata({
   };
 }
 
-const SearchPage = async ({
+const CategoryPage = async ({
   params,
   searchParams,
 }: {
   params: { category: string };
   searchParams: { [key: string]: string | string[] | undefined };
 }) => {
-  console.log('[CategoryPage] Fetching products for category:', params.category);
-  const data = await getProductsByCategoryFromDB(params.category);
-  console.log('[CategoryPage] Products fetched:', data.length);
+  const currentPage = Number(searchParams.page) || 1;
+  const itemsPerPage = DEFAULT_ITEMS_PER_PAGE;
 
-  let filtered: Product[] | undefined;
+  // Check if any filters are applied (except page)
+  const hasFilters = searchParams.sort || searchParams.price;
 
-  if (searchParams.sort || searchParams.price) {
-    filtered = filteredData(searchParams, data);
+  let products: Product[];
+  let totalCount: number;
+
+  if (hasFilters) {
+    // When filters are applied, fetch all and filter in memory
+    console.log('[CategoryPage] Fetching all products for filtering:', params.category);
+    const allData = await getProductsByCategoryFromDB(params.category);
+    const filtered = filteredData(searchParams, allData);
+    totalCount = filtered.length;
+
+    // Paginate filtered results
+    const offset = (currentPage - 1) * itemsPerPage;
+    products = filtered.slice(offset, offset + itemsPerPage);
+  } else {
+    // No filters - use database-level pagination
+    console.log('[CategoryPage] Fetching paginated products for category:', params.category);
+    const paginatedResult = await getProductsByCategoryPaginatedFromDB(
+      params.category,
+      currentPage,
+      itemsPerPage
+    );
+    products = paginatedResult.data;
+    totalCount = paginatedResult.totalCount;
+  }
+
+  console.log('[CategoryPage] Products to display:', products.length, 'of', totalCount);
+
+  if (totalCount === 0) {
+    return (
+      <p className="font-serif text-lg">
+        No products found in{" "}
+        <span className="font-bold">{params.category}</span>
+      </p>
+    );
   }
 
   return (
     <>
+      <p className="font-serif text-lg mb-3">
+        Showing {totalCount} products in{" "}
+        <span className="font-bold">
+          {params.category.charAt(0).toUpperCase() + params.category.slice(1)}
+        </span>
+      </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
-        {(filtered || data)?.map((product: Product) => (
+        {products.map((product: Product) => (
           <ProductCard key={product.id} data={product} />
         ))}
       </div>
+      <Pagination
+        totalItems={totalCount}
+        itemsPerPage={itemsPerPage}
+        currentPage={currentPage}
+      />
     </>
   );
 };
 
-export default SearchPage;
+export default CategoryPage;

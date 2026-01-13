@@ -9,8 +9,14 @@ import { ClerkProvider } from "@clerk/nextjs";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: siteConfig.name,
+  title: {
+    default: siteConfig.name,
+    template: `%s | ${siteConfig.name}`,
+  },
   description: siteConfig.description,
+  keywords: ["ecommerce", "shopping", "online store", "Foticket", "fashion", "electronics", "home decor"],
+  authors: [{ name: "Foticket" }],
+  creator: "Foticket",
   icons: [
     {
       url: "/favicon.svg",
@@ -18,6 +24,22 @@ export const metadata: Metadata = {
       type: "image/svg+xml",
     },
   ],
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    siteName: siteConfig.name,
+    title: siteConfig.name,
+    description: siteConfig.description,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.name,
+    description: siteConfig.description,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

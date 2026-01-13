@@ -2,8 +2,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Terms & Conditions - ZEYREY',
-  description: 'Read the terms and conditions for using ZEYREY TECHNOLOGY PRIVATE LIMITED services.',
+  title: 'Terms & Conditions - Foticket',
+  description: 'Read the terms and conditions for using FOTICKET PRIVATE LIMITED services.',
 };
 
 const TermsConditions = () => {
@@ -18,7 +18,7 @@ const TermsConditions = () => {
         <div className="space-y-8">
           <section className="bg-white shadow overflow-hidden sm:rounded-lg p-6">
             <p className="text-gray-700 mb-6">
-              Welcome to ZEYREY TECHNOLOGY PRIVATE LIMITED! By accessing and using our website, you agree to comply with and be bound by the following terms and conditions. Please read them carefully.
+              Welcome to FOTICKET PRIVATE LIMITED! By accessing and using our website, you agree to comply with and be bound by the following terms and conditions. Please read them carefully.
             </p>
           </section>
 
@@ -28,7 +28,7 @@ const TermsConditions = () => {
             </div>
             <div className="px-4 py-5 sm:p-6">
               <ul className="list-decimal pl-5 space-y-3 text-gray-700">
-                <li>ZEYREY TECHNOLOGY PRIVATE LIMITED is an online clothing retail store that provides a variety of clothing items for purchase.</li>
+                <li>FOTICKET PRIVATE LIMITED is an online clothing retail store that provides a variety of clothing items for purchase.</li>
                 <li>These terms and conditions govern your use of the website and the purchase of products through the website. By using our website or purchasing products, you agree to these terms.</li>
               </ul>
             </div>
@@ -103,7 +103,7 @@ const TermsConditions = () => {
             </div>
             <div className="px-4 py-5 sm:p-6">
               <ul className="list-decimal pl-5 space-y-3 text-gray-700">
-                <li>All content on the website, including text, images, logos, and graphics, is the intellectual property of ZEYREY TECHNOLOGY PRIVATE LIMITED and is protected by copyright laws.</li>
+                <li>All content on the website, including text, images, logos, and graphics, is the intellectual property of FOTICKET PRIVATE LIMITED and is protected by copyright laws.</li>
                 <li>You may not use, reproduce, or distribute any of this content without prior written consent from us.</li>
               </ul>
             </div>
@@ -127,7 +127,7 @@ const TermsConditions = () => {
             </div>
             <div className="px-4 py-5 sm:p-6">
               <ul className="list-decimal pl-5 space-y-3 text-gray-700">
-                <li>ZEYREY TECHNOLOGY PRIVATE LIMITED is not liable for any damages, losses, or expenses arising from the use of the website or the purchase of products.</li>
+                <li>FOTICKET PRIVATE LIMITED is not liable for any damages, losses, or expenses arising from the use of the website or the purchase of products.</li>
                 <li>We are not responsible for any third-party websites or content linked to or from our website.</li>
               </ul>
             </div>
@@ -164,20 +164,28 @@ const TermsConditions = () => {
               <p className="text-gray-700 mb-4">
                 For any questions or concerns regarding these terms and conditions, please contact us at:
               </p>
-              <ul className="space-y-2 text-gray-700">
-                <li>Email: <a href="mailto:support@zeyrey.net" className="text-blue-600 hover:underline">support@zeyrey.net</a></li>
-                <li>Phone: <a href="tel:+919150913329" className="text-blue-600 hover:underline">+91 9150913329</a></li>
-                <li>Company: ZEYREY TECHNOLOGY PRIVATE LIMITED</li>
-              </ul>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <p className="font-semibold text-gray-900 mb-2">FOTICKET PRIVATE LIMITED</p>
+                <p className="text-xs text-gray-500 mb-3">CIN: U62090KA2025PTC211925</p>
+                <ul className="space-y-2 text-gray-600 text-sm">
+                  <li>Email: <a href="mailto:support@foticket.store" className="text-blue-600 hover:underline">support@foticket.store</a></li>
+                  <li className="pt-2">
+                    <span className="font-medium">Registered Office:</span><br />
+                    No. 1383/433, HBR Layout, 1st Stage,<br />
+                    Arabic College, Bangalore North,<br />
+                    Karnataka, India - 560045
+                  </li>
+                </ul>
+              </div>
               <p className="mt-6 text-lg font-medium text-center text-gray-900">
-                By using ZEYREY TECHNOLOGY PRIVATE LIMITED's services, you agree to these terms and conditions.
+                By using FOTICKET PRIVATE LIMITED's services, you agree to these terms and conditions.
               </p>
             </div>
           </section>
         </div>
 
         <div className="mt-12 pt-8 border-t border-gray-200 text-center">
-          <p className="text-sm text-gray-500">© {new Date().getFullYear()} ZEYREY. All rights reserved.</p>
+          <p className="text-sm text-gray-500">© {new Date().getFullYear()} FOTICKET PRIVATE LIMITED. All rights reserved.</p>
         </div>
       </div>
     </div>

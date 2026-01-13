@@ -34,10 +34,10 @@ const OrderConfirmationPage = () => {
           <p className="text-sm text-gray-500">
             Questions? Contact us at{" "}
             <Link
-              href="mailto:support@zeyrey.com"
+              href="mailto:support@foticket.store"
               className="text-blue-600 hover:underline"
             >
-              support@zeyrey.com
+              support@foticket.store
             </Link>
           </p>
         </div>

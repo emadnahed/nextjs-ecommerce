@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Shipping Policy - ZEYREY',
-  description: 'Learn about our shipping policies and delivery information at ZEYREY TECHNOLOGY PRIVATE LIMITED.',
+  title: 'Shipping Policy - Foticket',
+  description: 'Learn about our shipping policies and delivery information at FOTICKET PRIVATE LIMITED.',
 };
 
 const ShippingPolicy = () => {
@@ -78,17 +78,17 @@ const ShippingPolicy = () => {
               If you have any questions or encounter any issues, feel free to contact our support team:
             </p>
             <ul className="space-y-2 text-gray-700">
-              <li>Email: <a href="mailto:support@zeyrey.net" className="text-blue-600 hover:underline">support@zeyrey.net</a></li>
+              <li>Email: <a href="mailto:support@foticket.store" className="text-blue-600 hover:underline">support@foticket.store</a></li>
               <li>Phone: <a href="tel:+919150913329" className="text-blue-600 hover:underline">+91 9150913329</a></li>
             </ul>
             <p className="mt-6 text-lg font-medium text-center text-gray-900">
-              Thank you for choosing <span className="text-blue-600">ZEYREY TECHNOLOGY PRIVATE LIMITED</span>! We look forward to serving you.
+              Thank you for choosing <span className="text-blue-600">FOTICKET PRIVATE LIMITED</span>! We look forward to serving you.
             </p>
           </div>
         </div>
 
         <div className="mt-12 pt-8 border-t border-gray-200 text-center">
-          <p className="text-sm text-gray-500">© {new Date().getFullYear()} ZEYREY. All rights reserved.</p>
+          <p className="text-sm text-gray-500">© {new Date().getFullYear()} Foticket. All rights reserved.</p>
         </div>
       </div>
     </div>

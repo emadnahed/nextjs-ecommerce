@@ -47,7 +47,7 @@ async function main() {
 
   console.log(`✓ Created ${sizes.length} sizes`);
 
-  // Create Sample Products (ZEYREY-style)
+  // Create Sample Products (Foticket-style)
   console.log('Creating sample products...');
 
   const products = [

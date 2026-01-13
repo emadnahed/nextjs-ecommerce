@@ -20,7 +20,7 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "www.zeyrey.net",
+        hostname: "www.foticket.store",
       },
       {
         protocol: "https",

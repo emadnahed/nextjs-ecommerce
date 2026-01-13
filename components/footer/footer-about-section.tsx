@@ -15,7 +15,7 @@ const FooterAboutSection = () => {
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="about" className="border-none">
             <AccordionTrigger className="py-6 text-lg font-semibold text-gray-900 hover:text-blue-600 hover:no-underline">
-              More About ZEYREY
+              More About Foticket
             </AccordionTrigger>
             <AccordionContent className="pb-6">
               <div className="space-y-6">

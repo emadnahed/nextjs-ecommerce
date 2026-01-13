@@ -437,3 +437,232 @@ export async function getAllProductsPrioritizedFromDB(): Promise<Product[]> {
     return [];
   }
 }
+
+/**
+ * Pagination result type
+ */
+export interface PaginatedResult<T> {
+  data: T[];
+  totalCount: number;
+  totalPages: number;
+  currentPage: number;
+  itemsPerPage: number;
+}
+
+/**
+ * Default items per page for pagination
+ */
+export const DEFAULT_ITEMS_PER_PAGE = 12;
+
+/**
+ * Get all products with pagination, prioritizing those with productDetails (Server-side only)
+ */
+export async function getAllProductsPaginatedFromDB(
+  page: number = 1,
+  itemsPerPage: number = DEFAULT_ITEMS_PER_PAGE
+): Promise<PaginatedResult<Product>> {
+  try {
+    console.log('[ServerDataAccess] Fetching paginated products, page:', page);
+
+    // Get all productDetails to get proper names
+    const allProductDetails = await db.productDetails.findMany();
+
+    // Create a map of productId -> proper name from data.name
+    const productDetailsMap = new Map<string, { name: string; valid: boolean }>();
+    allProductDetails.forEach(pd => {
+      const detailData = pd.data as any;
+      const properName = detailData?.name || pd.title;
+      const isValid = properName && !isInvalidTitle(properName);
+      productDetailsMap.set(pd.productId, {
+        name: isValid ? properName : '',
+        valid: isValid
+      });
+    });
+
+    // Get all products
+    const products = await db.product.findMany({
+      orderBy: {
+        price: 'desc'
+      }
+    });
+
+    // Add hasDetails flag, fix titles, and sort
+    const productsWithFlag = products
+      .map(p => {
+        const details = productDetailsMap.get(p.productId);
+        const hasValidDetails = details?.valid || false;
+        return {
+          ...p,
+          title: hasValidDetails && details?.name ? details.name : p.title,
+          hasDetails: hasValidDetails
+        };
+      })
+      .filter(p => !isInvalidTitle(p.title));
+
+    const sortedProducts = productsWithFlag.sort((a, b) => {
+      if (a.hasDetails && !b.hasDetails) return -1;
+      if (!a.hasDetails && b.hasDetails) return 1;
+      return b.price - a.price;
+    });
+
+    const totalCount = sortedProducts.length;
+    const totalPages = Math.ceil(totalCount / itemsPerPage);
+    const validPage = Math.max(1, Math.min(page, totalPages || 1));
+    const offset = (validPage - 1) * itemsPerPage;
+    const paginatedData = sortedProducts.slice(offset, offset + itemsPerPage);
+
+    console.log('[ServerDataAccess] Paginated products:', paginatedData.length, 'of', totalCount);
+
+    return {
+      data: paginatedData as Product[],
+      totalCount,
+      totalPages,
+      currentPage: validPage,
+      itemsPerPage
+    };
+  } catch (error) {
+    console.error('[ServerDataAccess] Error fetching paginated products:', error);
+    return {
+      data: [],
+      totalCount: 0,
+      totalPages: 0,
+      currentPage: 1,
+      itemsPerPage
+    };
+  }
+}
+
+/**
+ * Get products by category with pagination (Server-side only)
+ */
+export async function getProductsByCategoryPaginatedFromDB(
+  category: string,
+  page: number = 1,
+  itemsPerPage: number = DEFAULT_ITEMS_PER_PAGE
+): Promise<PaginatedResult<Product>> {
+  try {
+    console.log('[ServerDataAccess] Fetching paginated products by category:', category, 'page:', page);
+
+    // Get total count
+    const totalCount = await db.product.count({
+      where: { category }
+    });
+
+    const totalPages = Math.ceil(totalCount / itemsPerPage);
+    const validPage = Math.max(1, Math.min(page, totalPages || 1));
+    const offset = (validPage - 1) * itemsPerPage;
+
+    // Get paginated products
+    const products = await db.product.findMany({
+      where: { category },
+      orderBy: {
+        price: 'desc'
+      },
+      skip: offset,
+      take: itemsPerPage
+    });
+
+    console.log('[ServerDataAccess] Paginated category products:', products.length, 'of', totalCount);
+
+    return {
+      data: products as Product[],
+      totalCount,
+      totalPages,
+      currentPage: validPage,
+      itemsPerPage
+    };
+  } catch (error) {
+    console.error('[ServerDataAccess] Error fetching paginated category products:', error);
+    return {
+      data: [],
+      totalCount: 0,
+      totalPages: 0,
+      currentPage: 1,
+      itemsPerPage
+    };
+  }
+}
+
+/**
+ * Get featured products with pagination (Server-side only)
+ */
+export async function getFeaturedProductsPaginatedFromDB(
+  page: number = 1,
+  itemsPerPage: number = DEFAULT_ITEMS_PER_PAGE
+): Promise<PaginatedResult<Product>> {
+  try {
+    console.log('[ServerDataAccess] Fetching paginated featured products, page:', page);
+
+    // Get all productDetails to get proper names
+    const allProductDetails = await db.productDetails.findMany();
+
+    if (allProductDetails.length === 0) {
+      console.log('[ServerDataAccess] No products with details found');
+      return {
+        data: [],
+        totalCount: 0,
+        totalPages: 0,
+        currentPage: 1,
+        itemsPerPage
+      };
+    }
+
+    // Create a map of productId -> proper name from data.name
+    const productDetailsMap = new Map<string, { name: string; data: any }>();
+    allProductDetails.forEach(pd => {
+      const detailData = pd.data as any;
+      const properName = detailData?.name || pd.title;
+      if (properName && !isInvalidTitle(properName)) {
+        productDetailsMap.set(pd.productId, { name: properName, data: detailData });
+      }
+    });
+
+    // Get all products
+    const products = await db.product.findMany();
+
+    // Filter to only products with valid details and good names
+    const featured = products
+      .filter(p => productDetailsMap.has(p.productId))
+      .map(p => {
+        const details = productDetailsMap.get(p.productId)!;
+        return {
+          ...p,
+          title: details.name,
+          hasDetails: true
+        };
+      })
+      .sort((a, b) => {
+        const ratingA = parseFloat(a.rating) || 0;
+        const ratingB = parseFloat(b.rating) || 0;
+        if (ratingB !== ratingA) {
+          return ratingB - ratingA;
+        }
+        return b.reviewCount - a.reviewCount;
+      });
+
+    const totalCount = featured.length;
+    const totalPages = Math.ceil(totalCount / itemsPerPage);
+    const validPage = Math.max(1, Math.min(page, totalPages || 1));
+    const offset = (validPage - 1) * itemsPerPage;
+    const paginatedData = featured.slice(offset, offset + itemsPerPage);
+
+    console.log('[ServerDataAccess] Paginated featured products:', paginatedData.length, 'of', totalCount);
+
+    return {
+      data: paginatedData as Product[],
+      totalCount,
+      totalPages,
+      currentPage: validPage,
+      itemsPerPage
+    };
+  } catch (error) {
+    console.error('[ServerDataAccess] Error fetching paginated featured products:', error);
+    return {
+      data: [],
+      totalCount: 0,
+      totalPages: 0,
+      currentPage: 1,
+      itemsPerPage
+    };
+  }
+}

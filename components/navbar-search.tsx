@@ -120,9 +120,9 @@ const NavbarSearch = () => {
   };
 
   return (
-    <div className="flex mx-auto relative w-full max-w-xl" ref={dropdownRef}>
+    <div className="flex mx-auto relative w-full max-w-2xl" ref={dropdownRef}>
       <Input
-        className="w-full pr-20 rounded-full border-none bg-white text-black placeholder:text-gray-500 h-10"
+        className="w-full pr-24 rounded-full border-none bg-white text-black placeholder:text-gray-500 h-12 text-base shadow-sm"
         placeholder="Search for products..."
         onChange={(e) => setSearch(e.target.value)}
         onKeyDown={handleKeyDown}
@@ -133,19 +133,19 @@ const NavbarSearch = () => {
         <button
           type="button"
           onClick={clearSearch}
-          className="absolute right-12 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors"
+          className="absolute right-14 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors"
         >
-          <X size={14} className="text-gray-400" />
+          <X size={18} className="text-gray-400" />
         </button>
       )}
       <div
-        className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-yellow-400 rounded-full p-1.5 cursor-pointer hover:bg-yellow-500 transition"
+        className="absolute right-1.5 top-1/2 transform -translate-y-1/2 bg-yellow-400 rounded-full p-2.5 cursor-pointer hover:bg-yellow-500 transition shadow-sm"
         onClick={handleSearchSubmit}
       >
         {isLoading ? (
-          <Loader2 size={16} className="text-black animate-spin" />
+          <Loader2 size={20} className="text-black animate-spin" />
         ) : (
-          <SearchIcon size={16} className="text-black" />
+          <SearchIcon size={20} className="text-black" />
         )}
       </div>
 

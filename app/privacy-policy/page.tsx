@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy - ZEYREY',
-  description: 'Learn how we collect, use, and protect your personal information at ZEYREY.',
+  title: 'Privacy Policy - Foticket',
+  description: 'Learn how we collect, use, and protect your personal information at Foticket.',
 };
 
 export default function PrivacyPolicy() {
@@ -133,7 +133,7 @@ export default function PrivacyPolicy() {
               <li>Request deletion of your personal data (subject to legal and contractual obligations)</li>
               <li>Opt-out of promotional communications</li>
             </ul>
-            <p className="mt-4 text-gray-600">To exercise these rights, please contact us at <a href="mailto:support@zeyrey.net" className="text-blue-600 hover:underline">support@zeyrey.net</a></p>
+            <p className="mt-4 text-gray-600">To exercise these rights, please contact us at <a href="mailto:support@foticket.store" className="text-blue-600 hover:underline">support@foticket.store</a></p>
           </div>
         </div>
 
@@ -169,16 +169,25 @@ export default function PrivacyPolicy() {
             <h2 className="text-xl font-semibold text-gray-900">11. Contact Us</h2>
           </div>
           <div className="px-4 py-5 sm:p-6">
-            <p className="text-gray-700 mb-2">If you have any questions or concerns about our Privacy Policy, please contact us:</p>
-            <ul className="space-y-2 text-gray-600">
-              <li>Email: <a href="mailto:support@zeyrey.net" className="text-blue-600 hover:underline">support@zeyrey.net</a></li>
-              <li>Phone: <a href="tel:+919150913329" className="text-blue-600 hover:underline">+91 9150913329</a></li>
-            </ul>
+            <p className="text-gray-700 mb-4">If you have any questions or concerns about our Privacy Policy, please contact us:</p>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <p className="font-semibold text-gray-900 mb-2">FOTICKET PRIVATE LIMITED</p>
+              <p className="text-xs text-gray-500 mb-3">CIN: U62090KA2025PTC211925</p>
+              <ul className="space-y-2 text-gray-600 text-sm">
+                <li>Email: <a href="mailto:support@foticket.store" className="text-blue-600 hover:underline">support@foticket.store</a></li>
+                <li className="pt-2">
+                  <span className="font-medium">Registered Office:</span><br />
+                  No. 1383/433, HBR Layout, 1st Stage,<br />
+                  Arabic College, Bangalore North,<br />
+                  Karnataka, India - 560045
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 
         <div className="mt-12 pt-8 border-t border-gray-200 text-center">
-          <p className="text-sm text-gray-500">© {new Date().getFullYear()} ZEYREY. All rights reserved.</p>
+          <p className="text-sm text-gray-500">© {new Date().getFullYear()} FOTICKET PRIVATE LIMITED. All rights reserved.</p>
         </div>
       </div>
     </div>

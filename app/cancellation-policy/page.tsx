@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Cancellation Policy - ZEYREY',
-  description: 'Learn about our order cancellation policies at ZEYREY TECHNOLOGY PRIVATE LIMITED.',
+  title: 'Cancellation Policy - Foticket',
+  description: 'Learn about our order cancellation policies at FOTICKET PRIVATE LIMITED.',
 };
 
 const CancellationPolicy = () => {
@@ -32,7 +32,7 @@ const CancellationPolicy = () => {
 
         <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
           <div className="px-4 py-5 sm:px-6">
-            <h2 className="text-xl font-semibold text-gray-900">Order Cancellation by ZEYREY TECHNOLOGY PRIVATE LIMITED</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Order Cancellation by FOTICKET PRIVATE LIMITED</h2>
           </div>
           <div className="px-4 py-5 sm:p-6">
             <p className="text-gray-700 mb-4">
@@ -58,17 +58,17 @@ const CancellationPolicy = () => {
               For any questions or assistance regarding order cancellations, please contact our support team:
             </p>
             <ul className="space-y-2 text-gray-700">
-              <li>Email: <a href="mailto:support@zeyrey.net" className="text-blue-600 hover:underline">support@zeyrey.net</a></li>
+              <li>Email: <a href="mailto:support@foticket.store" className="text-blue-600 hover:underline">support@foticket.store</a></li>
               <li>Phone: <a href="tel:+919150913329" className="text-blue-600 hover:underline">+91 9150913329</a></li>
             </ul>
             <p className="mt-6 text-lg font-medium text-center text-gray-900">
-              Thank you for choosing <span className="text-blue-600">ZEYREY TECHNOLOGY PRIVATE LIMITED</span>!
+              Thank you for choosing <span className="text-blue-600">FOTICKET PRIVATE LIMITED</span>!
             </p>
           </div>
         </div>
 
         <div className="mt-12 pt-8 border-t border-gray-200 text-center">
-          <p className="text-sm text-gray-500">© {new Date().getFullYear()} ZEYREY. All rights reserved.</p>
+          <p className="text-sm text-gray-500">© {new Date().getFullYear()} Foticket. All rights reserved.</p>
         </div>
       </div>
     </div>
