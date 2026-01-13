@@ -38,6 +38,7 @@
   body,
   :root{
     height: 100%;
+    scroll-behavior: smooth;
   }
   .dark {
     --background: 0 0% 3.9%;

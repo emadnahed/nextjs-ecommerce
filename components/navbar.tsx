@@ -19,7 +19,7 @@ const NavBar = () => {
   const { isLoaded, isSignedIn } = useUser();
 
   return (
-    <div className="border-b">
+    <div className="border-b sticky top-0 z-50 bg-white/75 backdrop-blur-md transition-all">
       <Container>
         <div className="px-4 sm:px-6 lg:px-8 flex h-16 items-center justify-between">
           <MobileSidebar>
