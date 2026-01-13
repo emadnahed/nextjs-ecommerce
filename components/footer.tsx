@@ -2,7 +2,6 @@ import Link from "next/link";
 import FooterAboutSection from "./footer/footer-about-section";
 import FooterCategoryLinks from "./footer/footer-category-links";
 import FooterBrandInfo from "./footer/footer-brand-info";
-import FooterDownloadApp from "./footer/footer-download-app";
 import FooterBottomBar from "./footer/footer-bottom-bar";
 
 const Footer = () => {
@@ -19,15 +18,15 @@ const Footer = () => {
           {/* Divider */}
           <div className="border-t border-gray-200 my-10"></div>
 
-          {/* 3. Brand Info + Quick Links + Legal + Download App */}
+          {/* 3. Brand Info + Quick Links + Legal */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
             {/* Brand Info */}
-            <div className="md:col-span-4">
+            <div className="md:col-span-5">
               <FooterBrandInfo />
             </div>
 
             {/* Quick Links */}
-            <div className="md:col-span-2">
+            <div className="md:col-span-3">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Links</h3>
               <ul className="space-y-3">
                 {[
@@ -45,7 +44,7 @@ const Footer = () => {
             </div>
 
             {/* Legal */}
-            <div className="md:col-span-3">
+            <div className="md:col-span-4">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Legal</h3>
               <ul className="space-y-3">
                 {[
@@ -62,11 +61,6 @@ const Footer = () => {
                   </li>
                 ))}
               </ul>
-            </div>
-
-            {/* Download App Section */}
-            <div className="md:col-span-3">
-              <FooterDownloadApp />
             </div>
           </div>
 

@@ -221,15 +221,9 @@ export const FOOTER_CATEGORIES: FooterCategorySection[] = [
   },
 ];
 
-// Community and app download content
+// Community content
 export const COMMUNITY_CONTENT = {
   title: "Join the Foticket Community",
   description:
-    "For a seamless online shopping experience, feel free to download the Foticket App. With millions of happy customers, we believe in growing our community. To give you a hassle-free online shopping experience, plenty of user-friendly features will make your shopping online easier than ever. Foticket offers multiple payment options, debit and credit cards, UPI, and COD, to help you with a smooth checkout process. For any queries or concerns, send us an email at support@foticket.store.",
-};
-
-export const APP_DOWNLOAD_CONTENT = {
-  title: "Download Foticket App Now",
-  subtitle: "More Than Just Shopping",
-  description: "Interested in selling online? Foticket enables individuals to start their selling journey with ease.",
+    "With millions of happy customers, we believe in growing our community. To give you a hassle-free online shopping experience, plenty of user-friendly features will make your shopping online easier than ever. Foticket offers multiple payment options, debit and credit cards, UPI, and COD, to help you with a smooth checkout process. For any queries or concerns, send us an email at support@foticket.store.",
 };
